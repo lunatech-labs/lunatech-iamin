@@ -4,11 +4,17 @@ val LogbackVersion = "1.2.3"
 val TypesafeConfigVersion = "1.3.3"
 
 lazy val root = (project in file("."))
+  .enablePlugins(JavaServerAppPackaging)
+  .enablePlugins(DockerPlugin)
   .settings(
     organization := "com.lunatech",
     name := "lunatech-iamin",
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.12.8",
+
+    maintainer in Docker := "Lunatech Labs <lunatech@lunatech.com>",
+    dockerBaseImage := "openjdk:8-jre-slim",
+
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,

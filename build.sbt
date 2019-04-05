@@ -12,6 +12,8 @@ lazy val root = (project in file("."))
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.12.8",
 
+    fork in run := true,
+
     maintainer in Docker := "Lunatech Labs <lunatech@lunatech.com>",
     dockerBaseImage := "openjdk:8-jre-slim",
 

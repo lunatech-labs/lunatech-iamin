@@ -1,0 +1,26 @@
+openapi: "3.0.0"
+info:
+  title: IAmIn version service
+  version: 0.0.1-SNAPSHOT
+
+paths:
+  /version:
+    get:
+      operationId: getVersion
+      summary: Return the app's version
+      responses:
+        200:
+          description: Current app's version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+
+components:
+  schemas:
+    Version:
+      properties:
+        value:
+          type: string
+      required:
+        - value

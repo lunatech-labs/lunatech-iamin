@@ -1,24 +1,22 @@
 package com.lunatech.iamin.utils
 
-import java.io.OutputStreamWriter
-import java.nio.charset.StandardCharsets
 import java.sql.DriverManager
 
 import com.lunatech.iamin.config.DatabaseConfig
 import com.typesafe.scalalogging.StrictLogging
 import liquibase.Liquibase
 import liquibase.database.jvm.JdbcConnection
-import liquibase.exception.LiquibaseException
 import liquibase.resource.ClassLoaderResourceAccessor
+
+import scala.util.Try
 
 object DatabaseMigrator extends StrictLogging {
 
   /**
     * Applies all Liquibase migrations to the database specified in the config.
     * @param config Configuration used to access the database
-    * @param dryRun Indicates it the migrations should be printed instead of being really applied
     */
-  def applyMigrations(config: DatabaseConfig, dryRun: Boolean): Unit = {
+  def applyMigrations(config: DatabaseConfig): Either[Throwable, Unit] = {
 
     val connection = DriverManager.getConnection(
       config.properties.url,
@@ -26,38 +24,30 @@ object DatabaseMigrator extends StrictLogging {
       config.properties.password
     )
 
-    applyMigrations(connection, dryRun)
+    applyMigrations(connection)
   }
 
   /**
     * Applies all Liquibase migrations to the specified connection.
     * @param connection Database connection to use
-    * @param dryRun Indicates it the migrations should be printed instead of being really applied
     */
-  def applyMigrations(connection: java.sql.Connection, dryRun: Boolean): Unit = {
+  def applyMigrations(connection: java.sql.Connection): Either[Throwable, Unit] = {
 
     logger.debug(s"Applying Liquibase migrations...")
 
-    val liquibase = new Liquibase(
-      "db_changelog.xml",
-      new ClassLoaderResourceAccessor(),
-      new JdbcConnection(connection)
-    )
+    Try {
+      val liquibase = new Liquibase(
+        "db_changelog.xml",
+        new ClassLoaderResourceAccessor(),
+        new JdbcConnection(connection)
+      )
 
-    try {
-
-      if (dryRun) {
-        liquibase.update(Option.empty[String].orNull, new OutputStreamWriter(System.out, StandardCharsets.UTF_8))
-      } else {
-        // For real
-        liquibase.update(Option.empty[String].orNull)
-      }
+      liquibase.update(Option.empty[String].orNull)
 
       logger.debug("Applying Liquibase migrations complete!")
-    } catch {
-      case e: LiquibaseException =>
-        logger.error(s"Applying Liquibase migrations failed: ${e.getMessage}", e)
-        throw e
+    }.toEither.left.map { t =>
+      logger.error(s"Applying liquibase migration failed: ${t.getMessage}", t)
+      t
     }
   }
 }

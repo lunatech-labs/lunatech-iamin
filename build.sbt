@@ -6,6 +6,7 @@ val TypesafeConfigVersion = "1.3.3"
 lazy val root = (project in file("."))
   .enablePlugins(JavaServerAppPackaging)
   .enablePlugins(DockerPlugin)
+  .enablePlugins(BuildInfoPlugin)
   .settings(
     organization := "com.lunatech",
     name := "lunatech-iamin",
@@ -25,6 +26,9 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % LogbackVersion,
       "com.typesafe" % "config" % TypesafeConfigVersion
     ),
+
+    buildInfoPackage := "com.lunatech.iamin.rest",
+
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6"),
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.4")
   )

@@ -14,13 +14,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Version'
+                $ref: '#/components/schemas/VersionResponse'
 
 components:
   schemas:
-    Version:
+    VersionResponse:
+      type: object
       properties:
-        value:
+        version:
           type: string
       required:
         - value

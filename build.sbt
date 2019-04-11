@@ -30,6 +30,10 @@ lazy val root = (project in file("."))
     buildInfoPackage := "com.lunatech.iamin.rest",
 
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6"),
-    addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.4")
+    addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.4"),
+
+    guardrailTasks in Compile := List(
+      ScalaServer(file("documentation/api/version.yaml"), pkg = "com.lunatech.iamin.rest", framework = "http4s", tracing = false)
+    )
   )
 

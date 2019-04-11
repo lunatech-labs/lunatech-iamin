@@ -65,3 +65,15 @@ lazy val root = (project in file("."))
       ScalaServer(file("documentation/api.yaml"), pkg = "com.lunatech.iamin.rest", framework = "http4s", tracing = false)
     )
   )
+
+lazy val generateSlickTables = taskKey[Seq[File]]("Generate Slick code from Liquibase migrations")
+generateSlickTables := {
+  val f = sourceManaged.value / "main/scala"
+  val cp = (Compile / fullClasspath).value
+  val log = streams.value.log
+  val r = (Compile / runner).value
+
+  r.run("com.lunatech.iamin.database.SlickGenerator", cp.files, Array(f.getPath), log)
+
+  f.listFiles()
+}

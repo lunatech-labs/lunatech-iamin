@@ -1,8 +1,13 @@
 val CirceVersion = "0.11.1"
+val FicusVersion = "1.4.5"
 val Http4sVersion = "0.19.0"
-val Specs2Version = "4.5.1"
+val LiquibaseVersion = "3.6.3"
 val LogbackVersion = "1.2.3"
+val OtjPgEmbeddedVersion = "0.13.1"
+val PostgresqlVersion = "42.2.5"
+val Specs2Version = "4.5.1"
 val TypesafeConfigVersion = "1.3.3"
+val TypsafeLoggingVersion = "3.9.2"
 
 lazy val root = (project in file("."))
   .enablePlugins(JavaServerAppPackaging)
@@ -22,13 +27,19 @@ lazy val root = (project in file("."))
     scalacOptions ++= Seq("-Ypartial-unification"),
 
     libraryDependencies ++= Seq(
-      "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
+      "ch.qos.logback" % "logback-classic" % LogbackVersion,
+      "com.iheart" %% "ficus" % FicusVersion,
+      "com.opentable.components" % "otj-pg-embedded" % OtjPgEmbeddedVersion,
+      "com.typesafe" % "config" % TypesafeConfigVersion,
+      "com.typesafe.scala-logging" %% "scala-logging" % TypsafeLoggingVersion,
       "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
+      "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
-      "org.specs2" %% "specs2-core" % Specs2Version % "test",
-      "ch.qos.logback" % "logback-classic" % LogbackVersion,
-      "com.typesafe" % "config" % TypesafeConfigVersion
+      "org.liquibase" % "liquibase-core" % LiquibaseVersion,
+      "org.postgresql" % "postgresql" % PostgresqlVersion,
+
+      "org.specs2" %% "specs2-core" % Specs2Version % Test,
     ),
 
     libraryDependencies ++= Seq(
@@ -47,4 +58,3 @@ lazy val root = (project in file("."))
       ScalaServer(file("documentation/api/version.yaml"), pkg = "com.lunatech.iamin.rest", framework = "http4s", tracing = false)
     )
   )
-

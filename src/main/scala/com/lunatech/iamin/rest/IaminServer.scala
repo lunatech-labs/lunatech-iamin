@@ -1,15 +1,16 @@
 package com.lunatech.iamin.rest
 
 
-import cats.effect.{ConcurrentEffect, Effect, ExitCode, IO, IOApp, Timer, ContextShift}
+import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import cats.implicits._
-import org.http4s.server.blaze.BlazeServerBuilder
+import com.lunatech.iamin.config.Config
+import fs2.Stream
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.implicits._
-import fs2.Stream
-import scala.concurrent.ExecutionContext.global
-
+import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
+
+import scala.concurrent.ExecutionContext.global
 
 object IaminServer {
 
@@ -33,7 +34,7 @@ object IaminServer {
 
 
       exitCode <- BlazeServerBuilder[F]
-        .bindHttp(ApplicationConfig.port, ApplicationConfig.host)
+        .bindHttp(Config.server.port, Config.server.host)
         .withHttpApp(finalHttpApp)
         .serve
     } yield exitCode

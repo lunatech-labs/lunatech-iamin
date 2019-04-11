@@ -1,4 +1,5 @@
-val Http4sVersion = "0.18.23"
+val CirceVersion = "0.11.1"
+val Http4sVersion = "0.19.0"
 val Specs2Version = "4.5.1"
 val LogbackVersion = "1.2.3"
 val TypesafeConfigVersion = "1.3.3"
@@ -18,7 +19,10 @@ lazy val root = (project in file("."))
     maintainer in Docker := "Lunatech Labs <lunatech@lunatech.com>",
     dockerBaseImage := "openjdk:8-jre-slim",
 
+    scalacOptions ++= Seq("-Ypartial-unification"),
+
     libraryDependencies ++= Seq(
+      "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
@@ -26,6 +30,13 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % LogbackVersion,
       "com.typesafe" % "config" % TypesafeConfigVersion
     ),
+
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-core",
+      "io.circe" %% "circe-java8",
+      "io.circe" %% "circe-generic",
+      "io.circe" %% "circe-parser"
+    ).map(_ % CirceVersion),
 
     buildInfoPackage := "com.lunatech.iamin.rest",
 

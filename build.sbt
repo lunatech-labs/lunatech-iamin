@@ -24,7 +24,10 @@ lazy val root = (project in file("."))
     maintainer in Docker := "Lunatech Labs <lunatech@lunatech.com>",
     dockerBaseImage := "openjdk:8-jre-slim",
 
-    scalacOptions ++= Seq("-Ypartial-unification"),
+    scalacOptions ++= Seq(
+      "-language:higherKinds",
+      "-Ypartial-unification"
+    ),
 
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-classic" % LogbackVersion,
@@ -55,6 +58,6 @@ lazy val root = (project in file("."))
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.4"),
 
     guardrailTasks in Compile := List(
-      ScalaServer(file("documentation/api/version.yaml"), pkg = "com.lunatech.iamin.rest", framework = "http4s", tracing = false)
+      ScalaServer(file("documentation/api.yaml"), pkg = "com.lunatech.iamin.rest", framework = "http4s", tracing = false)
     )
   )

@@ -68,7 +68,7 @@ lazy val root = (project in file("."))
 
 lazy val generateSlickTables = taskKey[Seq[File]]("Generate Slick code from Liquibase migrations")
 generateSlickTables := {
-  val f = sourceManaged.value / "main/scala"
+  val f = sourceDirectory.value / "main" / "scala"
   val cp = (Compile / fullClasspath).value
   val log = streams.value.log
   val r = (Compile / runner).value

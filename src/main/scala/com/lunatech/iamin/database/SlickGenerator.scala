@@ -18,17 +18,15 @@ object SlickGenerator extends StreamApp[IO] {
   )
 
   override def stream(args: List[String], requestShutdown: IO[Unit]): fs2.Stream[IO, StreamApp.ExitCode] = {
-
-    val targetDir = args.head
-
     fs2.Stream.eval {
       val asd = for {
+        sourceDir <- args.headOption.fold(IO.raiseError[String](new RuntimeException("param sourceDir missing")))(IO.pure)
         _ <- IO(println("Running Slick codegenerator..."))
         db <- IO(EmbeddedPostgres.start)
         _ <- IO.fromEither(DatabaseMigrator.applyMigrations(db.getPostgresDatabase.getConnection))
         model <- createDatabaseModel(db.getPostgresDatabase)
         generator <- createGenerator(model)
-        _ <- writeFiles(generator, targetDir)
+        _ <- writeFiles(generator, sourceDir)
         res <- IO.pure(StreamApp.ExitCode.Success)
       } yield res
 
@@ -82,16 +80,14 @@ object SlickGenerator extends StreamApp[IO] {
     }
   }
 
-  private def writeFiles(generator: SourceCodeGenerator, targetDir: String) = {
+  private def writeFiles(generator: SourceCodeGenerator, sourceDir: String) = {
     IO {
-      val pkg = "com.lunatech.iamin.database"
-      val profile = pkg + ".IaminPostgresProfile"
-      val folder = targetDir
+      val dbPackage = "com.lunatech.iamin.database"
 
-      generator.writeToFile(
-        profile,
-        folder,
-        pkg
+      generator.writeToMultipleFiles(
+        dbPackage + ".IaminPostgresProfile",
+        sourceDir,
+        dbPackage + ".tables"
       )
     }
   }

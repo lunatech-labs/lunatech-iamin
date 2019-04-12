@@ -24,4 +24,4 @@ components:
         version:
           type: string
       required:
-        - value
+        - version

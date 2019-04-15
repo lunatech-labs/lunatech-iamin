@@ -1,10 +1,8 @@
 package com.lunatech.iamin.database
 
-import cats.effect.IO
-import com.lunatech.iamin.database.IaminPostgresProfile.api._
-import com.lunatech.iamin.utils.DatabaseMigrator
+import cats.effect.{ExitCode, IO, IOApp}
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import fs2.StreamApp
+import doobie.util.transactor.Transactor
 import javax.sql.DataSource
 import slick.codegen.SourceCodeGenerator
 import slick.jdbc.meta.MTable
@@ -13,28 +11,28 @@ import slick.sql.SqlProfile.ColumnOption
 
 import scala.concurrent.ExecutionContext
 
-object SlickGenerator extends StreamApp[IO] {
+object SlickTableGenerator extends IOApp {
 
   private val ExcludedTables = Seq(
     "databasechangeloglock", "databasechangelog" // Liquibase specific tables
   )
 
-  override def stream(args: List[String], requestShutdown: IO[Unit]): fs2.Stream[IO, StreamApp.ExitCode] =
-    fs2.Stream.eval {
-      for {
-        sourceDir <- args.headOption.fold(IO.raiseError[String](new RuntimeException("param sourceDir missing")))(IO.pure)
-        db        <- IO(EmbeddedPostgres.start)
-        _         <- IO.fromEither(DatabaseMigrator.applyMigrations(db.getPostgresDatabase.getConnection))
-        model     <- createDatabaseModel(db.getPostgresDatabase, ExecutionContext.global)
-        generator <- IO.pure(new CustomSourceCodeGenerator(model))
-        _         <- writeFiles(generator, sourceDir)
-        exitCode  <- IO.pure(StreamApp.ExitCode.Success)
-      } yield exitCode
-    }
+  override def run(args: List[String]): IO[ExitCode] = {
+    for {
+      outDir    <- args.headOption.fold(IO.raiseError[String](new RuntimeException("param outDir is missing")))(IO.pure)
+      db        <- IO(EmbeddedPostgres.start())
+      xa        <- IO(Transactor.fromConnection[IO](db.getPostgresDatabase.getConnection, ExecutionContext.global))
+      _         <- xa.configure(Database.init)
+      model     <- createDatabaseModel(db.getPostgresDatabase, ExecutionContext.global)
+      generator <- IO.pure(new CustomSourceCodeGenerator(model))
+      _         <- writeFiles(generator, outDir)
+      exitCode  <- IO.pure(ExitCode.Success)
+    } yield exitCode
+  }
 
   private def createDatabaseModel(dataSource: DataSource, ec: ExecutionContext): IO[Model] =
     for {
-      db             <- IO(Database.forDataSource(dataSource, None))
+      db             <- IO(com.lunatech.iamin.database.IaminPostgresProfile.api.Database.forDataSource(dataSource, None))
       tablesAndViews <- IO(MTable.getTables(None, None, None, Some(Seq("TABLE", "VIEW"))).map(ts => ts.filterNot(t => ExcludedTables.contains(t.name.name)))(ec))
       action         <- IO(IaminPostgresProfile.createModel(Some(tablesAndViews))(ec))
       model          <- IO.fromFuture(IO(db.run(action)))

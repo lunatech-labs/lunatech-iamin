@@ -3,7 +3,7 @@ package com.lunatech.iamin.rest
 
 import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import cats.implicits._
-import com.lunatech.iamin.config.Config
+import com.lunatech.iamin.config.{Config, ServerConfig}
 import com.lunatech.iamin.rest.version.VersionResource
 import com.lunatech.iamin.rest.version.impl.VersionHandler
 import fs2.Stream
@@ -14,7 +14,7 @@ import org.http4s.server.middleware.Logger
 
 import scala.concurrent.ExecutionContext.global
 
-object IaminServer {
+class IaminServer(serverConfig: ServerConfig) {
 
   def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
     for {
@@ -40,7 +40,7 @@ object IaminServer {
 
       exitCode <- BlazeServerBuilder[F]
         // TODO: don't use Config object, but something like Stream.eval(Config.load())
-        .bindHttp(Config.server.port, Config.server.host)
+        .bindHttp(serverConfig.port, serverConfig.host)
         .withHttpApp(finalHttpApp)
         .serve
     } yield exitCode

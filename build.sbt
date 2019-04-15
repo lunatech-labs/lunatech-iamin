@@ -1,10 +1,11 @@
 val CirceVersion = "0.11.1"
-val FicusVersion = "1.4.5"
+val DoobieVersion = "0.6.0"
 val Http4sVersion = "0.19.0"
 val LiquibaseVersion = "3.6.3"
 val LogbackVersion = "1.2.3"
 val OtjPgEmbeddedVersion = "0.13.1"
 val PostgresqlVersion = "42.2.5"
+val PureConfigVersion = "0.10.2"
 val SlickPgVersion = "0.17.0"
 val SlickVersion = "3.3.0"
 val Specs2Version = "4.5.1"
@@ -33,9 +34,16 @@ lazy val root = (project in file("."))
 
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-classic" % LogbackVersion,
+      "com.github.pureconfig" % "pureconfig_2.12" % PureConfigVersion,
       "com.github.tminglei" %% "slick-pg" % SlickPgVersion,
-      "com.iheart" %% "ficus" % FicusVersion,
       "com.opentable.components" % "otj-pg-embedded" % OtjPgEmbeddedVersion,
+      "io.circe" %% "circe-core" % CirceVersion,
+      "io.circe" %% "circe-java8" % CirceVersion,
+      "io.circe" %% "circe-generic" % CirceVersion,
+      "io.circe" %% "circe-parser" % CirceVersion,
+      "org.tpolecat" %% "doobie-core" % DoobieVersion,
+      "org.tpolecat" %% "doobie-hikari" % DoobieVersion,
+      "org.tpolecat" %% "doobie-postgres" % DoobieVersion,
       "com.typesafe" % "config" % TypesafeConfigVersion,
       "com.typesafe.scala-logging" %% "scala-logging" % TypsafeLoggingVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
@@ -49,12 +57,7 @@ lazy val root = (project in file("."))
       "org.postgresql" % "postgresql" % PostgresqlVersion,
 
       "org.specs2" %% "specs2-core" % Specs2Version % Test,
-    ) ++ Seq(
-      "io.circe" %% "circe-core",
-      "io.circe" %% "circe-java8",
-      "io.circe" %% "circe-generic",
-      "io.circe" %% "circe-parser"
-    ).map(_ % CirceVersion),
+    ),
 
     buildInfoPackage := "com.lunatech.iamin.rest",
 
@@ -73,7 +76,7 @@ generateSlickTables := {
   val log = streams.value.log
   val r = (Compile / runner).value
 
-  r.run("com.lunatech.iamin.database.SlickGenerator", cp.files, Array(f.getPath), log)
+  r.run("com.lunatech.iamin.database.SlickTableGenerator", cp.files, Array(f.getPath), log)
 
   f.listFiles()
 }

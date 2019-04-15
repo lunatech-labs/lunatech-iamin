@@ -39,6 +39,7 @@ object IaminServer {
 
 
       exitCode <- BlazeServerBuilder[F]
+        // TODO: don't use Config object, but something like Stream.eval(Config.load())
         .bindHttp(Config.server.port, Config.server.host)
         .withHttpApp(finalHttpApp)
         .serve

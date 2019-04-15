@@ -43,9 +43,7 @@ lazy val root = (project in file("."))
       "org.postgresql" % "postgresql" % PostgresqlVersion,
 
       "org.specs2" %% "specs2-core" % Specs2Version % Test,
-    ),
-
-    libraryDependencies ++= Seq(
+    ) ++ Seq(
       "io.circe" %% "circe-core",
       "io.circe" %% "circe-java8",
       "io.circe" %% "circe-generic",

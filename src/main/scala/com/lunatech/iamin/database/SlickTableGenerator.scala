@@ -17,7 +17,7 @@ object SlickTableGenerator extends IOApp {
     "databasechangeloglock", "databasechangelog" // Liquibase specific tables
   )
 
-  override def run(args: List[String]): IO[ExitCode] = {
+  override def run(args: List[String]): IO[ExitCode] =
     for {
       outDir    <- args.headOption.fold(IO.raiseError[String](new RuntimeException("param outDir is missing")))(IO.pure)
       db        <- IO(EmbeddedPostgres.start())
@@ -28,7 +28,6 @@ object SlickTableGenerator extends IOApp {
       _         <- writeFiles(generator, outDir)
       exitCode  <- IO.pure(ExitCode.Success)
     } yield exitCode
-  }
 
   private def createDatabaseModel(dataSource: DataSource, ec: ExecutionContext): IO[Model] =
     for {

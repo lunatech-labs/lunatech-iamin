@@ -26,22 +26,20 @@ object Database {
     } yield xa
   }
 
-  def init(xa: HikariTransactor[IO]): IO[Unit] =
-    xa.configure(ds => init(ds.getConnection()))
+  def init(xa: HikariTransactor[IO]): IO[Unit] = xa.configure(ds => init(ds.getConnection()))
 
-  def init(connection: Connection): IO[Unit] =
-    IO {
-      Try {
-        val liquibase = new Liquibase(
-          "db_changelog.xml",
-          new ClassLoaderResourceAccessor(),
-          new JdbcConnection(connection)
-        )
+  def init(connection: Connection): IO[Unit] = IO {
+    Try {
+      val liquibase = new Liquibase(
+        "db_changelog.xml",
+        new ClassLoaderResourceAccessor(),
+        new JdbcConnection(connection)
+      )
 
-        liquibase.update(Option.empty[String].orNull)
-      }
-    } flatMap {
-      case Failure(e) => IO.raiseError(e)
-      case Success(_) => IO.unit
+      liquibase.update(Option.empty[String].orNull)
     }
+  } flatMap {
+    case Failure(e) => IO.raiseError(e)
+    case Success(_) => IO.unit
+  }
 }

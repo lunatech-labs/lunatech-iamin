@@ -1,0 +1,28 @@
+openapi: "3.0.0"
+info:
+  title: IAmIn REST service
+  version: 0.0.1-SNAPSHOT
+
+paths:
+  /version:
+    get:
+      x-scala-package: version
+      operationId: getVersion
+      summary: Return the app's version
+      responses:
+        200:
+          description: Current app's version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+
+components:
+  schemas:
+    VersionResponse:
+      type: object
+      properties:
+        version:
+          type: string
+      required:
+        - version

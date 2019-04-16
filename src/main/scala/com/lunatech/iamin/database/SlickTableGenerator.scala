@@ -1,6 +1,6 @@
 package com.lunatech.iamin.database
 
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import javax.sql.DataSource
 import slick.codegen.SourceCodeGenerator
@@ -13,31 +13,34 @@ import scala.concurrent.ExecutionContext
 object SlickTableGenerator extends IOApp {
 
   private val ExcludedTables = Seq(
-    "databasechangeloglock",  // Liquibase specific
-    "databasechangelog"       // Liquibase specific
+    "databasechangeloglock", // Liquibase specific
+    "databasechangelog" // Liquibase specific
   )
 
   override def run(args: List[String]): IO[ExitCode] =
-    for {
-      outputDir  <- parseOutputDir(args)
-      database   <- IO(EmbeddedPostgres.start())
-      dataSource <- IO.pure(database.getPostgresDatabase)
-      _          <- Database.migrate(dataSource.getConnection)
-      model      <- createDatabaseModel(dataSource, ExecutionContext.global)
-      generator  <- IO.pure(new CustomSourceCodeGenerator(model))
-      _          <- writeFiles(generator, outputDir)
-      exitCode   <- IO.pure(ExitCode.Success)
-    } yield exitCode
+    Resource.make(IO(EmbeddedPostgres.start())) { db =>
+      IO(db.close())
+    }.use { database =>
+      for {
+        outputDir <- parseOutputDir(args)
+        dataSource <- IO.pure(database.getPostgresDatabase)
+        _ <- Database.migrate(dataSource.getConnection)
+        model <- createDatabaseModel(dataSource, ExecutionContext.global)
+        generator <- IO.pure(new CustomSourceCodeGenerator(model))
+        _ <- writeFiles(generator, outputDir)
+        exitCode <- IO.pure(ExitCode.Success)
+      } yield exitCode
+    }
 
   private def parseOutputDir(args: List[String]): IO[String] =
     args.headOption.fold(IO.raiseError[String](new IllegalArgumentException("missing output directory")))(IO.pure)
 
   private def createDatabaseModel(dataSource: DataSource, ec: ExecutionContext): IO[Model] =
     for {
-      db             <- IO(com.lunatech.iamin.database.Profile.api.Database.forDataSource(dataSource, None))
+      db <- IO(com.lunatech.iamin.database.Profile.api.Database.forDataSource(dataSource, None))
       tablesAndViews <- IO(MTable.getTables(None, None, None, Some(Seq("TABLE", "VIEW"))).map(ts => ts.filterNot(t => ExcludedTables.contains(t.name.name)))(ec))
-      action         <- IO(Profile.createModel(Some(tablesAndViews))(ec))
-      model          <- IO.fromFuture(IO(db.run(action)))
+      action <- IO(Profile.createModel(Some(tablesAndViews))(ec))
+      model <- IO.fromFuture(IO(db.run(action)))
     } yield model
 
   private def writeFiles(generator: SourceCodeGenerator, sourceDir: String): IO[Unit] = IO {
@@ -58,7 +61,7 @@ object SlickTableGenerator extends IOApp {
     override def tableName: String => String = _.toLowerCase.toCamelCase
 
     override def Table = new Table(_) {
-      override def PlainSqlMapper= new PlainSqlMapperDef {
+      override def PlainSqlMapper = new PlainSqlMapperDef {
         override def enabled: Boolean = false
 
         override def code: String = super.code

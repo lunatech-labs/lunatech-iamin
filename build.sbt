@@ -52,9 +52,6 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "org.liquibase" % "liquibase-core" % LiquibaseVersion,
       "org.postgresql" % "postgresql" % PostgresqlVersion,
-      "org.tpolecat" %% "doobie-core" % DoobieVersion,
-      "org.tpolecat" %% "doobie-hikari" % DoobieVersion,
-      "org.tpolecat" %% "doobie-postgres" % DoobieVersion,
 
       "org.specs2" %% "specs2-core" % Specs2Version % Test,
     ),
@@ -71,12 +68,12 @@ lazy val root = (project in file("."))
 
 lazy val generateSlickTables = taskKey[Seq[File]]("Generate Slick code from Liquibase migrations")
 generateSlickTables := {
-  val f = sourceDirectory.value / "main" / "scala"
+  val outputDirectory = sourceDirectory.value / "main" / "scala"
   val cp = (Compile / fullClasspath).value
   val log = streams.value.log
   val r = (Compile / runner).value
 
-  r.run("com.lunatech.iamin.database.SlickTableGenerator", cp.files, Array(f.getPath), log)
+  r.run("com.lunatech.iamin.database.SlickTableGenerator", cp.files, Array(outputDirectory.getPath), log)
 
-  f.listFiles()
+  outputDirectory.listFiles()
 }

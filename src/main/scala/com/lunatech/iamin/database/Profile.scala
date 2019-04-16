@@ -5,7 +5,7 @@ import com.github.tminglei.slickpg.{ExPostgresProfile, PgArraySupport}
 import slick.basic.Capability
 import slick.jdbc.JdbcCapabilities
 
-trait IaminPostgresProfile
+trait Profile
   extends ExPostgresProfile
   with PgArraySupport
   with PgStringSupport {
@@ -14,9 +14,9 @@ trait IaminPostgresProfile
     super.computeCapabilities +
       JdbcCapabilities.insertOrUpdate // Postgres native upsert
 
-  override val api: API = IaminPostgresApi
+  override val api: API = Profile
 
-  object IaminPostgresApi
+  object Profile
     extends API
     with ArrayImplicits
     with PgStringImplicits {
@@ -26,4 +26,4 @@ trait IaminPostgresProfile
   }
 }
 
-object IaminPostgresProfile extends IaminPostgresProfile
+object Profile extends Profile

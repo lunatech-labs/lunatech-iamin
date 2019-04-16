@@ -2,7 +2,6 @@ package com.lunatech.iamin.database
 
 import cats.effect.{ExitCode, IO, IOApp}
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import doobie.util.transactor.Transactor
 import javax.sql.DataSource
 import slick.codegen.SourceCodeGenerator
 import slick.jdbc.meta.MTable
@@ -14,36 +13,40 @@ import scala.concurrent.ExecutionContext
 object SlickTableGenerator extends IOApp {
 
   private val ExcludedTables = Seq(
-    "databasechangeloglock", "databasechangelog" // Liquibase specific tables
+    "databasechangeloglock",  // Liquibase specific
+    "databasechangelog"       // Liquibase specific
   )
 
   override def run(args: List[String]): IO[ExitCode] =
     for {
-      outDir    <- args.headOption.fold(IO.raiseError[String](new RuntimeException("param outDir is missing")))(IO.pure)
-      db        <- IO(EmbeddedPostgres.start())
-      xa        <- IO(Transactor.fromConnection[IO](db.getPostgresDatabase.getConnection, ExecutionContext.global))
-      _         <- xa.configure(Database.init)
-      model     <- createDatabaseModel(db.getPostgresDatabase, ExecutionContext.global)
-      generator <- IO.pure(new CustomSourceCodeGenerator(model))
-      _         <- writeFiles(generator, outDir)
-      exitCode  <- IO.pure(ExitCode.Success)
+      outputDir  <- parseOutputDir(args)
+      database   <- IO(EmbeddedPostgres.start())
+      dataSource <- IO.pure(database.getPostgresDatabase)
+      _          <- Database.migrate(dataSource.getConnection)
+      model      <- createDatabaseModel(dataSource, ExecutionContext.global)
+      generator  <- IO.pure(new CustomSourceCodeGenerator(model))
+      _          <- writeFiles(generator, outputDir)
+      exitCode   <- IO.pure(ExitCode.Success)
     } yield exitCode
+
+  private def parseOutputDir(args: List[String]): IO[String] =
+    args.headOption.fold(IO.raiseError[String](new IllegalArgumentException("missing output directory")))(IO.pure)
 
   private def createDatabaseModel(dataSource: DataSource, ec: ExecutionContext): IO[Model] =
     for {
-      db             <- IO(com.lunatech.iamin.database.IaminPostgresProfile.api.Database.forDataSource(dataSource, None))
+      db             <- IO(com.lunatech.iamin.database.Profile.api.Database.forDataSource(dataSource, None))
       tablesAndViews <- IO(MTable.getTables(None, None, None, Some(Seq("TABLE", "VIEW"))).map(ts => ts.filterNot(t => ExcludedTables.contains(t.name.name)))(ec))
-      action         <- IO(IaminPostgresProfile.createModel(Some(tablesAndViews))(ec))
+      action         <- IO(Profile.createModel(Some(tablesAndViews))(ec))
       model          <- IO.fromFuture(IO(db.run(action)))
     } yield model
 
   private def writeFiles(generator: SourceCodeGenerator, sourceDir: String): IO[Unit] = IO {
-    val dbPackage = "com.lunatech.iamin.database"
+    val profileClass = Profile.getClass
 
     generator.writeToMultipleFiles(
-      dbPackage + ".IaminPostgresProfile",
+      profileClass.getCanonicalName.replace("$", ""),
       sourceDir,
-      dbPackage + ".tables"
+      profileClass.getPackage.getName + ".tables"
     )
   }
 

@@ -1,0 +1,51 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="20190415_users_and_availabilities" author="Kay">
+
+        <!-- users -->
+        <createTable tableName="users">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="PK_users_id"/>
+            </column>
+            <column name="display_name" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+
+
+        <!-- availabilities -->
+        <createTable tableName="availabilities">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="PK_availabilities_id"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints
+                        nullable="false"
+                        referencedTableName="users"
+                        referencedColumnNames="id"
+                        foreignKeyName="FK_availabilities_id_users_id"
+                        deleteCascade="true"
+                />
+            </column>
+            <column name="is_present" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="availabilities" indexName="IX_availabilities_user_id">
+            <column name="user_id"/>
+        </createIndex>
+
+        <addUniqueConstraint tableName="availabilities" columnNames="user_id,date"/>
+
+    </changeSet>
+</databaseChangeLog>

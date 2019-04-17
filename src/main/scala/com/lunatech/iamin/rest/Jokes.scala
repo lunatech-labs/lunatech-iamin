@@ -33,6 +33,8 @@ object Jokes {
   def impl[F[_]: Sync](C: Client[F]): Jokes[F] = new Jokes[F]{
     val dsl = new Http4sClientDsl[F]{}
     import dsl._
+
+    @SuppressWarnings(Array("org.wartremover.warts.Throw"))
     def get: F[Jokes.Joke] = {
       C.expect[Joke](GET(Uri.uri("https://icanhazdadjoke.com/")))
         .adaptError{ case t => JokeError(t)} // Prevent Client Json Decoding Failure Leaking

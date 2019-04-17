@@ -2,7 +2,7 @@ package com.lunatech.iamin.database
 
 import java.time.LocalDateTime
 
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import javax.sql.DataSource
 import slick.codegen.SourceCodeGenerator
@@ -20,16 +20,19 @@ object SlickTableGenerator extends IOApp {
   )
 
   override def run(args: List[String]): IO[ExitCode] =
-    for {
-      outputDir  <- parseOutputDir(args)
-      database   <- IO(EmbeddedPostgres.start())
-      dataSource <- IO.pure(database.getPostgresDatabase)
-      _          <- Database.migrate(dataSource.getConnection)
-      model      <- createDatabaseModel(dataSource, ExecutionContext.global)
-      generator  <- IO.pure(new CustomSourceCodeGenerator(model))
-      _          <- writeFiles(generator, outputDir)
-      exitCode   <- IO.pure(ExitCode.Success)
-    } yield exitCode
+    Resource.make(IO(EmbeddedPostgres.start())) { db =>
+      IO(db.close())
+    }.use { database =>
+      for {
+        outputDir  <- parseOutputDir(args)
+        dataSource <- IO.pure(database.getPostgresDatabase)
+        _          <- Database.migrate(dataSource.getConnection)
+        model      <- createDatabaseModel(dataSource, ExecutionContext.global)
+        generator  <- IO.pure(new CustomSourceCodeGenerator(model))
+        _          <- writeFiles(generator, outputDir)
+        exitCode   <- IO.pure(ExitCode.Success)
+      } yield exitCode
+    }
 
   private def parseOutputDir(args: List[String]): IO[String] =
     args.headOption.fold(IO.raiseError[String](new IllegalArgumentException("missing output directory")))(IO.pure)
@@ -60,7 +63,7 @@ object SlickTableGenerator extends IOApp {
     override def tableName: String => String = _.toLowerCase.toCamelCase
 
     override def Table = new Table(_) {
-      override def PlainSqlMapper= new PlainSqlMapperDef {
+      override def PlainSqlMapper = new PlainSqlMapperDef {
         override def enabled: Boolean = false
 
         override def code: String = super.code

@@ -1,3 +1,5 @@
+import scala.util.Try
+
 val CirceVersion = "0.11.1"
 val DoobieVersion = "0.6.0"
 val Http4sVersion = "0.19.0"
@@ -66,7 +68,7 @@ lazy val root = (project in file("."))
     )
   )
 
-lazy val generateSlickTables = taskKey[Seq[File]]("Generate Slick code from Liquibase migrations")
+lazy val generateSlickTables = taskKey[Try[Unit]]("Generate Slick code from Liquibase migrations")
 generateSlickTables := {
   val outputDirectory = sourceDirectory.value / "main" / "scala"
   val cp = (Compile / fullClasspath).value
@@ -74,6 +76,4 @@ generateSlickTables := {
   val r = (Compile / runner).value
 
   r.run("com.lunatech.iamin.database.SlickTableGenerator", cp.files, Array(outputDirectory.getPath), log)
-
-  outputDirectory.listFiles()
 }

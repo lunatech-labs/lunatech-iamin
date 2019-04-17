@@ -30,6 +30,7 @@ object Database {
         new JdbcConnection(connection)
       )
 
+      @SuppressWarnings(Array("org.wartremover.warts.Null"))
       val contexts = Option.empty[String].orNull
 
       liquibase.update(contexts)

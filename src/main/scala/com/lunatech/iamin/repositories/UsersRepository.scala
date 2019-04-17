@@ -4,7 +4,7 @@ import com.lunatech.iamin.model.{User, UserNotFound}
 
 trait UsersRepository[F[_]] {
 
-  def getUsers(offset: Long = 0, limit: Int = Int.MaxValue): F[Seq[User]]
+  def getUsers(idOffset: Long = 0, limit: Int = Int.MaxValue): F[Seq[User]]
 
   def getUser(id: Long): F[Either[UserNotFound.type, User]]
 

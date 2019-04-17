@@ -7,6 +7,7 @@ import com.lunatech.iamin.database.Database
 
 object Main extends IOApp {
 
+  @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Nothing"))
   override def run(args: List[String]): IO[ExitCode] = {
 
     val server = for {

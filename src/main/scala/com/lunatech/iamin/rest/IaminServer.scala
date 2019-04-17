@@ -16,6 +16,7 @@ import scala.concurrent.ExecutionContext.global
 
 class IaminServer(serverConfig: ServerConfig) {
 
+  @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Nothing"))
   def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
     for {
       client <- BlazeClientBuilder[F](global).stream

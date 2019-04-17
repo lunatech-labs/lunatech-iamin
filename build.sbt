@@ -77,3 +77,17 @@ generateSlickTables := {
 
   r.run("com.lunatech.iamin.database.SlickTableGenerator", cp.files, Array(outputDirectory.getPath), log)
 }
+
+wartremoverErrors ++= Warts.unsafe
+wartremoverErrors --= Seq(
+  wartremover.Wart.DefaultArguments
+)
+
+wartremoverWarnings ++= Warts.all
+wartremoverWarnings --= Seq(
+  wartremover.Wart.DefaultArguments
+)
+
+wartremoverExcluded += baseDirectory.value / "src" / "test" / "scala"
+wartremoverExcluded += baseDirectory.value / "src" / "main" / "scala" / "com" / "lunatech" / "iamin" / "database" / "tables" // Slick generated
+wartremoverExcluded += sourceManaged.value

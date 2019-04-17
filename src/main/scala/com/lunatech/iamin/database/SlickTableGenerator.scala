@@ -1,5 +1,7 @@
 package com.lunatech.iamin.database
 
+import java.time.LocalDateTime
+
 import cats.effect.{ExitCode, IO, IOApp}
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import javax.sql.DataSource
@@ -65,6 +67,8 @@ object SlickTableGenerator extends IOApp {
       }
 
       override def Column = new Column(_) {
+
+        @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
         override def rawType: String = {
           model.options.find(_.isInstanceOf[ColumnOption.SqlType]).flatMap {
             tpe =>
@@ -83,6 +87,46 @@ object SlickTableGenerator extends IOApp {
           }
         }
       }
+
+      // We want a companion object for the table trait instead of a lazy val since that can't be a top level declaration
+      // Is private so will only be referenced by other classes in scope
+      override def TableValue: AnyRef with TableValueDef = new TableValueDef {
+        override def code: String = s"private object $name extends TableQuery(tag => new ${TableClass.name}(tag))"
+      }
+    }
+
+    override def packageContainerCode(profile: String, pkg: String, container: String): String = {
+      val tables = codePerTable.keys.map { tableName =>
+        s"lazy val $tableName: TableQuery[$tableName] = TableQuery[$tableName]"
+      } mkString "\n"
+
+      s"""
+         |// AUTO-GENERATED Slick data model, DO NOT EDIT
+         |// generated at ${LocalDateTime.now.toString}
+         |package $pkg
+         |
+         |import com.lunatech.iamin.database.Profile.api._
+         |
+         |object $container {
+         |
+         |  ${indent(tables)}
+         |}
+       """.stripMargin.trim
+    }
+
+    override def packageTableCode(tableName: String, tableCode: String, pkg: String, container: String): String = {
+      s"""
+         |// AUTO-GENERATED Slick data model for table $tableName, DO NOT EDIT
+         |// generated at ${LocalDateTime.now.toString}
+         |
+         |package $pkg
+         |
+         |import ${Profile.getClass.getName.replace("$", "")}.api._
+         |import com.lunatech.iamin.database.{Profile => profile} // Hack to satisfy the generated $tableName Object
+         |
+         |$tableCode
+         |
+       """.stripMargin.trim()
     }
   }
 }

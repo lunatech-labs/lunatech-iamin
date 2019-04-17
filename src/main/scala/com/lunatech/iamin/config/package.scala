@@ -9,11 +9,11 @@ import pureconfig.generic.ProductHint
 
 package object config {
 
-  case class ServerConfig(host: String, port: Int)
+  final case class ServerConfig(host: String, port: Int)
 
-  case class DatabaseConfig(driver: String, url: String, user: String, password: String)
+  final case class DatabaseConfig(driver: String, url: String, user: String, password: String)
 
-  case class Config(server: ServerConfig, database: DatabaseConfig)
+  final case class Config(server: ServerConfig, database: DatabaseConfig)
 
   object Config {
 
@@ -22,7 +22,7 @@ package object config {
     def load(): IO[Config] = IO {
       loadConfig[Config](ConfigFactory.load())
     } flatMap {
-      case Left(e) => IO.raiseError(new ConfigReaderException[Config](e))
+      case Left(e) => IO.raiseError[Config](new ConfigReaderException[Config](e))
       case Right(config) => IO.pure(config)
     }
   }

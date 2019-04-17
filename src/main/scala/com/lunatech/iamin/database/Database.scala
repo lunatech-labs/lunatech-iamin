@@ -30,10 +30,12 @@ object Database {
         new JdbcConnection(connection)
       )
 
-      liquibase.update(Option.empty[String].orNull)
+      val contexts = Option.empty[String].orNull
+
+      liquibase.update(contexts)
     }
   } flatMap {
-    case Failure(e) => IO.raiseError(e)
+    case Failure(e) => IO.raiseError[Unit](e)
     case Success(_) => IO.unit
   }
 }

@@ -55,6 +55,7 @@ lazy val root = (project in file("."))
       "org.liquibase" % "liquibase-core" % LiquibaseVersion,
       "org.postgresql" % "postgresql" % PostgresqlVersion,
 
+      "org.specs2" %% "specs2-cats" % Specs2Version % Test,
       "org.specs2" %% "specs2-core" % Specs2Version % Test,
     ),
 

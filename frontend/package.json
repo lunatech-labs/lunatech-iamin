@@ -1,0 +1,19 @@
+{
+  "name": "iamin-webapp",
+  "version": "0.0.1-SNAPSHOT",
+  "description": "IAmIn web app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/lunatech-labs/lunatech-iamin.git"
+  },
+  "author": "Lunatech <lunatech@lunatech.com>",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/lunatech-labs/lunatech-iamin/issues"
+  },
+  "homepage": "https://github.com/lunatech-labs/lunatech-iamin#readme"
+}

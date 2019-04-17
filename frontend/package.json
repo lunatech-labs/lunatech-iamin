@@ -4,6 +4,7 @@
   "description": "IAmIn web app",
   "main": "index.js",
   "scripts": {
+    "start": "parcel index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +16,15 @@
   "bugs": {
     "url": "https://github.com/lunatech-labs/lunatech-iamin/issues"
   },
-  "homepage": "https://github.com/lunatech-labs/lunatech-iamin#readme"
+  "homepage": "https://github.com/lunatech-labs/lunatech-iamin#readme",
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "parcel-bundler": "^1.12.3"
+  }
 }

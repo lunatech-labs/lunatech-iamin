@@ -11,9 +11,13 @@ package object config {
 
   final case class ServerConfig(host: String, port: Int)
 
+  final case class ApplicationConfig(hashids: HashidsConfig)
+
+  final case class HashidsConfig(minLength: Int, secret: String)
+
   final case class DatabaseConfig(driver: String, url: String, user: String, password: String)
 
-  final case class Config(server: ServerConfig, database: DatabaseConfig)
+  final case class Config(server: ServerConfig, database: DatabaseConfig, application: ApplicationConfig)
 
   object Config {
 

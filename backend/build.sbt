@@ -2,6 +2,7 @@ import scala.util.Try
 
 val CirceVersion = "0.11.1"
 val DoobieVersion = "0.6.0"
+val HashidsVersion = "1.0.3"
 val Http4sVersion = "0.19.0"
 val LiquibaseVersion = "3.6.3"
 val LogbackVersion = "1.2.3"
@@ -48,6 +49,7 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-generic" % CirceVersion,
       "io.circe" %% "circe-java8" % CirceVersion,
       "io.circe" %% "circe-parser" % CirceVersion,
+      "org.hashids" % "hashids" % HashidsVersion, // TODO: Replace with something with a more sane API
       "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,

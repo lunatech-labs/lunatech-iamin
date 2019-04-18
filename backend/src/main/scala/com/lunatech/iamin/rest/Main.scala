@@ -14,7 +14,7 @@ object Main extends IOApp {
       config <- Resource.liftF(Config.load())
       db     <- Database.create(config.database)
       _      <- Resource.liftF(Database.migrate(db.source.createConnection))
-      server = new IaminServer(config.server)
+      server = new IaminServer(config, db)
     } yield server
 
     server.use(_.stream[IO].compile.drain.as(ExitCode.Success))

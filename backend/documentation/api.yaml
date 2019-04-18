@@ -2,10 +2,17 @@ openapi: "3.0.0"
 info:
   title: IAmIn REST service
   version: 0.0.1-SNAPSHOT
-
+tags:
+  - name: version
+  - name: users
+    description: Everything regarding user management
+  - name: availabilities
+    description: Everything about availabilities
 paths:
   /version:
     get:
+      tags:
+        - version
       x-scala-package: version
       operationId: getVersion
       summary: Return the app's version
@@ -16,8 +23,228 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VersionResponse'
-
+  /users:
+    get:
+      tags:
+        - users
+      x-scala-package: users
+      operationId: getUsers
+      summary: Retrieve a list of all users
+      responses:
+        200:
+          description: List of all users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersListResponse'
+    post:
+      tags:
+        - users
+      x-scala-package: users
+      operationId: postUsers
+      summary: Create a new user
+      requestBody:
+        description: New user to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostUsersRequest'
+        required: true
+      responses:
+        200:
+          description: Successfully created new user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  /users/{userId}:
+    get:
+      tags:
+        - users
+      x-scala-package: users
+      operationId: getUsersById
+      summary: Retrieves a specific user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        200:
+          description: Requested user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        404:
+          description: Requested user was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+    patch:
+      tags:
+        - users
+      x-scala-package: users
+      operationId: patchUserById
+      summary: Updates a specific user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      requestBody:
+        description: Updated user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostUsersRequest' # TODO: Make dedicated type
+        required: true
+      responses:
+        200:
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        404:
+          description: Requested user was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+    delete:
+      tags:
+        - users
+      x-scala-package: users
+      operationId: deleteUserById
+      summary: Deletes a specific user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        204:
+          description: Successfully deleted user
+        404:
+          description: Requested user was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+    parameters:
+      - name: userId
+        in: path
+        description: Id of the specific user
+        required: true
+        schema:
+          type: string
+  /users/{userId}/availabilities:
+    get:
+      tags:
+        - availabilities
+      x-scala-package: users
+      operationId: getUserByIdAvailabilities
+      summary: Retrieves all availabilities of the user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        200:
+          description: List of all availabilities of the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilitiesListResponse'
+        404:
+          description: Requested user or availability was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+    post:
+      tags:
+        - availabilities
+      x-scala-package: users
+      operationId: postUserByIdAvailabilities
+      summary: Creates a new availability for the user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      requestBody:
+        description: New availability create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostAvailabilityRequest'
+        required: true
+      responses:
+        200:
+          description: Successfully created new availability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        404:
+          description: Requested user or availability was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+  /users/{userId}/availabilities/{availabilityId}:
+    get:
+      tags:
+        - availabilities
+      x-scala-package: users
+      operationId: getUserByIdAvailabilitiesById
+      summary: Retrieves a specific availability of the user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+        - $ref: '#/components/parameters/AvailabilityIdParam'
+      responses:
+        200:
+          description: Requested availability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        404:
+          description: Requested user or availability was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+    patch:
+      tags:
+        - availabilities
+      x-scala-package: users
+      operationId: patchUserByIdAvailabilitiesById
+      summary: Updates a specific availability of the user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+        - $ref: '#/components/parameters/AvailabilityIdParam'
+      requestBody:
+        description: New availability create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostAvailabilityRequest'
+        required: true
+      responses:
+        200:
+          description: Updated availability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'  # TODO: Make dedicated type
+        404:
+          description: Requested user or availability was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+    delete:
+      tags:
+        - availabilities
+      x-scala-package: users
+      operationId: deleteUserByIdAvailabilitiesById
+      summary: Deleted a specific availability of the user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+        - $ref: '#/components/parameters/AvailabilityIdParam'
+      responses:
+        204:
+          description: Successfully deleted availability
+        404:
+          description: Requested user or availability was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
 components:
+  parameters:
+    UserIdParam:
+      name: userId
+      in: path
+      description: Id of the specific user
+      required: true
+      schema:
+        type: string
+        # TODO: narrow type
+    AvailabilityIdParam:
+      name: availabilityId
+      in: path
+      description: Id of the specific availability
+      required: true
+      schema:
+        type: string
+        # TODO: narrow type
   schemas:
     VersionResponse:
       type: object
@@ -26,3 +253,63 @@ components:
           type: string
       required:
         - version
+    PostUsersRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+      required:
+        - display_name
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+      required:
+        - id
+        - display_name
+    UsersListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+      required:
+        - items
+    PostAvailabilityRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        is_present:
+          type: boolean
+      required:
+        - date
+        - is_present
+    AvailabilityResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date
+        is_present:
+          type: boolean
+      required:
+        - id
+        - date
+        - is_present
+    AvailabilitiesListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilityResponse'
+      required:
+        - items

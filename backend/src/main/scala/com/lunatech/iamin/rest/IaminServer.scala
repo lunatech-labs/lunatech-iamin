@@ -3,7 +3,7 @@ package com.lunatech.iamin.rest
 
 import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import cats.implicits._
-import com.lunatech.iamin.config.{Config, ServerConfig}
+import com.lunatech.iamin.config.Config
 import com.lunatech.iamin.database.Profile.api.Database
 import com.lunatech.iamin.repositories.impl.DbUsersRepository
 import com.lunatech.iamin.rest.users.UsersResource

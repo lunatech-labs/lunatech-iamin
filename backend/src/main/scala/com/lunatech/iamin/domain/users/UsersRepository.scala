@@ -1,6 +1,4 @@
-package com.lunatech.iamin.repositories
-
-import com.lunatech.iamin.model.{User, UserNotFound}
+package com.lunatech.iamin.domain.users
 
 trait UsersRepository[F[_]] {
 

@@ -1,15 +1,13 @@
-package com.lunatech.iamin.rest.users.impl
+package com.lunatech.iamin.domain.users
 
 import java.time.LocalDateTime
 
 import cats.effect.{Async, IO}
-import com.lunatech.iamin.model
-import com.lunatech.iamin.repositories.UsersRepository
 import com.lunatech.iamin.rest.definitions._
 import com.lunatech.iamin.rest.users._
 import org.hashids.Hashids
 
-class UsersRoutes[F[_] : Async](hashids: Hashids, usersRepository: UsersRepository[IO]) extends UsersHandler[F] {
+class UsersHandlerImpl[F[_] : Async](hashids: Hashids, usersRepository: UsersRepository[IO]) extends UsersHandler[F] {
 
   override def getUsers(respond: GetUsersResponse.type)(): F[GetUsersResponse] = implicitly[Async[F]].liftIO {
     for {
@@ -49,7 +47,7 @@ class UsersRoutes[F[_] : Async](hashids: Hashids, usersRepository: UsersReposito
         } { id =>
           for {
             now                   <- IO(LocalDateTime.now)
-            updatedUserOrNotFound <- usersRepository.updateUser(model.User(id, body.displayName, now))
+            updatedUserOrNotFound <- usersRepository.updateUser(User(id, body.displayName, now))
             response              <- updatedUserOrNotFound
               .fold(
                 _ => IO.pure(respond.NotFound),

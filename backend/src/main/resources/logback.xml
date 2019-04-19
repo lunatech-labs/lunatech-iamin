@@ -14,4 +14,9 @@
   <root level="${LOG_LEVEL}">
     <appender-ref ref="STDOUT" />
   </root>
+
+  <logger name="com.opentable.db.postgres.embedded.EmbeddedPostgres" level="warn"/>
+  <logger name="liquibase" level="warn"/>
+  <logger name="nl.lunatech.imdb.database.Profile" level="warn"/>
+
 </configuration>

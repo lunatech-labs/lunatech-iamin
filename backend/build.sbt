@@ -13,6 +13,7 @@ val LogbackVersion = "1.2.3"
 val OtjPgEmbeddedVersion = "0.13.1"
 val PostgresqlVersion = "42.2.5"
 val PureConfigVersion = "0.10.2"
+val ScalaTestVersion = "3.0.5"
 val SlickPgVersion = "0.17.2"
 val SlickVersion = "3.3.0"
 val Specs2Version = "4.5.1"
@@ -61,11 +62,11 @@ lazy val root = (project in file("."))
       "org.liquibase" % "liquibase-core" % LiquibaseVersion,
       "org.postgresql" % "postgresql" % PostgresqlVersion,
 
-      "org.specs2" %% "specs2-cats" % Specs2Version % Test,
-      "org.specs2" %% "specs2-core" % Specs2Version % Test,
+      "org.scalatest" %% "scalatest" % ScalaTestVersion % Test
     ),
 
-    buildInfoPackage := "com.lunatech.iamin.rest",
+    buildInfoPackage := "com.lunatech.iamin.utils",
+    buildInfoObject := "_BuildInfo",
 
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0"),
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),

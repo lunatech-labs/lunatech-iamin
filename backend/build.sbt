@@ -1,4 +1,8 @@
-import scala.util.Try
+import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+import scala.util.{Failure, Success, Try}
 
 val CirceVersion = "0.11.1"
 val DoobieVersion = "0.6.0"
@@ -81,6 +85,44 @@ generateSlickTables := {
   r.run("com.lunatech.iamin.database.SlickTableGenerator", cp.files, Array(outputDirectory.getPath), log)
 }
 
+lazy val createLiquibaseMigration = inputKey[Try[File]]("create a Liquibase migration file")
+createLiquibaseMigration := {
+  import complete.DefaultParsers._
+
+  val description = spaceDelimited("<arg>").parsed.map(_.replaceAll(" ", "_").toLowerCase).mkString("_")
+
+  if (description.isEmpty) {
+    Failure(new IllegalArgumentException("migration description cannot be empty"))
+  } else {
+
+    val date = LocalDateTime.now.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toString
+    val filename = s"${date}_$description"
+    val username = Option(System.getProperty("user.name")).getOrElse("sbt")
+    val file = (Compile / resourceDirectory).value / "migrations" / s"$filename.xml"
+    val content =
+      s"""
+        |<databaseChangeLog
+        |        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        |        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        |        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+        |    <changeSet id="$filename" author="$username">
+        |
+        |        <!-- implement your migration here -->
+        |
+        |    </changeSet>
+        |</databaseChangeLog>
+      """.stripMargin
+    val log = streams.value.log
+
+    IO.write(file, content, StandardCharsets.UTF_8)
+
+    log.info(s"Create new Liquibase migration file at: ${file.toString}")
+
+    Success(file)
+  }
+}
+
+// Wartremover specifics
 wartremoverErrors ++= Warts.unsafe
 wartremoverErrors --= Seq(
   wartremover.Wart.DefaultArguments

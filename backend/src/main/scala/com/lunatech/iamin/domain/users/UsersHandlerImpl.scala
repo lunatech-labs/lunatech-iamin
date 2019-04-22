@@ -47,7 +47,7 @@ class UsersHandlerImpl[F[_] : Async](hashids: Hashids, usersRepository: UsersRep
         } { id =>
           for {
             now                   <- IO(LocalDateTime.now)
-            updatedUserOrNotFound <- usersRepository.updateUser(User(id, body.displayName, now))
+            updatedUserOrNotFound <- usersRepository.updateUser(User(id, body.displayName))
             response              <- updatedUserOrNotFound
               .fold(
                 _ => IO.pure(respond.NotFound),

@@ -13,6 +13,7 @@ val LogbackVersion = "1.2.3"
 val OtjPgEmbeddedVersion = "0.13.1"
 val PostgresqlVersion = "42.2.5"
 val PureConfigVersion = "0.10.2"
+val ScalaCheckVersion = "1.14.0"
 val ScalaTestVersion = "3.0.5"
 val SlickPgVersion = "0.17.2"
 val SlickVersion = "3.3.0"
@@ -62,7 +63,8 @@ lazy val root = (project in file("."))
       "org.liquibase" % "liquibase-core" % LiquibaseVersion,
       "org.postgresql" % "postgresql" % PostgresqlVersion,
 
-      "org.scalatest" %% "scalatest" % ScalaTestVersion % Test
+      "org.scalacheck" %% "scalacheck" % ScalaCheckVersion % Test,
+      "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
     ),
 
     buildInfoPackage := "com.lunatech.iamin.utils",

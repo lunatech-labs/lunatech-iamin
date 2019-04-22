@@ -116,10 +116,12 @@ Don't forget to commit the (newly) generated code to the Git repository.
 - [Scala](https://www.scala-lang.org) language
 - [OpenAPI](https://swagger.io) service definition and documentation
 - [Guardrail](https://github.com/twilio/guardrail) OpenAPI to Http4s code generator
+- [PureConfig](https://pureconfig.github.io) Configuration parsing
 - [Http4s](https://http4s.org) web server
 - [Liquibase](https://www.liquibase.org) database migrations
 - [Slick](http://slick.lightbend.com) database access
 - [Circe](https://circe.github.io/circe) json serialization
-- [Specs2](https://etorreborre.github.io/specs2/) testing
+- [ScalaTest]( http://www.scalatest.org) testing
+- [ScalaCheck](https://www.scalacheck.org) property testing
 - [Wartremover](http://www.wartremover.org) code linting
 - frontend stuff TBD

@@ -37,7 +37,8 @@ class DatabaseUsersRepository(db: Database) extends AbstractDatabaseRepository(d
     execute {
       Tables.Users
         .filter(_.id === user.id.bind)
-        .update(userToRow(user))
+        .map(_.displayName)
+        .update(user.displayName)
     } map { affectedRows =>
       Either.cond(affectedRows eqv 1, user, UserNotFound)
     }
@@ -51,9 +52,7 @@ class DatabaseUsersRepository(db: Database) extends AbstractDatabaseRepository(d
       Either.cond(affectedRows eqv 1, (), UserNotFound)
     }
 
-  private def userToRow(user: User): UsersRow = UsersRow(user.id, user.displayName, user.created)
-
-  private def rowToUser(row: UsersRow): User = User(row.id, row.displayName, row.created)
+  private def rowToUser(row: UsersRow): User = User(row.id, row.displayName)
 
   private def rowsToUsers(rows: Seq[UsersRow]): Seq[User] = rows map rowToUser
 }

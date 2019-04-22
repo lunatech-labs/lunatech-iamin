@@ -1,7 +1,9 @@
 package com.lunatech.iamin.domain.users
 
 import cats.effect.IO
-import com.lunatech.iamin.utils.DatabaseTest
+import com.lunatech.iamin.utils.{DatabaseTest, UserArbitraries}
+import org.scalacheck.Arbitrary._
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{EitherValues, FreeSpec, Matchers}
 
 class InMemoryUsersRepositorySpec extends UsersRepositorySpec {
@@ -12,65 +14,110 @@ class DatabaseUsersRepositorySpec extends UsersRepositorySpec with DatabaseTest 
   override val repo = new DatabaseUsersRepository(testDatabase)
 }
 
-trait UsersRepositorySpec extends FreeSpec with Matchers with EitherValues {
+trait UsersRepositorySpec
+  extends FreeSpec
+    with GeneratorDrivenPropertyChecks
+    with Matchers
+    with EitherValues
+    with UserArbitraries {
 
   val repo: UsersRepository[IO]
 
-  private var user1: User = _
-  private var user2: User = _
-
   s"repository" - {
-
     "is empty initially" in {
-      repo.getUsers().unsafeRunSync() shouldBe 'empty
+      (for {
+        users <- repo.getUsers()
+      } yield {
+        users shouldBe 'empty
+      }).unsafeRunSync()
     }
 
-    "create user" in {
-      val user = repo.createUser("Alice").unsafeRunSync()
-
-      user.displayName shouldBe "Alice"
-
-      user1 = user
+    "holds users" in {
+      forAll { (displayName1: String, displayName2: String) =>
+        (for {
+          user1 <- repo.createUser(displayName1)
+          user2 <- repo.createUser(displayName2)
+          users <- repo.getUsers()
+        } yield {
+          users should contain(user1)
+          users should contain(user2)
+        }).unsafeRunSync()
+      }
     }
 
-    "create another user" in {
-      val user = repo.createUser("Bob").unsafeRunSync()
-
-      user.displayName shouldBe "Bob"
-
-      user2 = user
+    "can create user" in {
+      forAll { displayName: String =>
+        (for {
+          user <- repo.createUser(displayName)
+        } yield {
+          user.displayName shouldBe displayName
+        }).unsafeRunSync()
+      }
     }
 
     "cannot get unknown user" in {
-      repo.getUser(-1).unsafeRunSync().left.value shouldBe UserNotFound
+      (for {
+        user <- repo.getUser(-1)
+      } yield {
+        user shouldBe 'left
+        user.left.value shouldBe UserNotFound
+      }).unsafeRunSync()
     }
 
-    "get user" in {
-      repo.getUser(user1.id).unsafeRunSync().right.value shouldBe user1
+    "can get known user" in {
+      forAll { displayName: String =>
+        (for {
+          created <- repo.createUser(displayName)
+          user <- repo.getUser(created.id)
+        } yield {
+          user shouldBe 'right
+          created shouldBe user.right.value
+        }).unsafeRunSync()
+      }
     }
 
     "cannot update unknown user" in {
-      repo.updateUser(user1.copy(id = -1)).unsafeRunSync().left.value shouldBe UserNotFound
+        (for {
+          user <- repo.updateUser(User(-1, ""))
+        } yield {
+          user shouldBe 'left
+          user.left.value shouldBe UserNotFound
+        }).unsafeRunSync()
     }
 
-    "update user" in {
-      val updatedUser = repo.updateUser(user1.copy(displayName = "Carol")).unsafeRunSync().right.value
+    "can update user" in {
+      forAll { (displayName: String, update: User) =>
+        (for {
+          id <- repo.createUser(displayName).map(_.id)
+          updated <- repo.updateUser(update.copy(id = id))
+          user    <- repo.getUser(id)
+        } yield {
+          user shouldBe 'right
 
-      updatedUser.displayName shouldBe "Carol"
-
-      user1 = updatedUser
+          user.right.value.id shouldBe id
+          updated shouldBe user
+        }).unsafeRunSync()
+      }
     }
 
     "cannot delete unknown user" in {
-      repo.deleteUser(-1).unsafeRunSync().left.value shouldBe UserNotFound
+      (for {
+        user <- repo.deleteUser(-1)
+      } yield {
+        user shouldBe 'left
+        user.left.value shouldBe UserNotFound
+      }).unsafeRunSync()
     }
 
-    "delete user" in {
-      repo.deleteUser(user1.id).unsafeRunSync() shouldBe 'right
-    }
-
-    "get users left" in {
-      repo.getUsers().unsafeRunSync() shouldBe Seq(user2)
+    "can delete user" in {
+      forAll { displayName: String =>
+        (for {
+          id      <- repo.createUser(displayName).map(_.id)
+          deleted <- repo.deleteUser(id)
+        } yield {
+          deleted shouldBe 'right
+        }).unsafeRunSync()
+      }
     }
   }
 }

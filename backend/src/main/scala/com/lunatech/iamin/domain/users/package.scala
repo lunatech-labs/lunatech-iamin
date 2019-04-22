@@ -1,9 +1,7 @@
 package com.lunatech.iamin.domain
 
-import java.time.LocalDateTime
-
 package object users {
-  final case class User(id: Long, displayName: String, created: LocalDateTime)
+  final case class User(id: Long, displayName: String)
 
   case object UserNotFound
 }

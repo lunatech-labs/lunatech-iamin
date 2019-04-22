@@ -1,6 +1,5 @@
 package com.lunatech.iamin.domain.users
 
-import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -21,10 +20,9 @@ class InMemoryUsersRepository extends UsersRepository[IO] {
 
   override def createUser(displayName: String): IO[User] =
     for {
-      id <- IO(ids.incrementAndGet())
-      now <- IO(LocalDateTime.now)
-      user <- IO.pure(User(id, displayName, now))
-      _ <- IO(users.put(id, user))
+      id   <- IO(ids.incrementAndGet())
+      user <- IO.pure(User(id, displayName))
+      _    <- IO(users.put(id, user))
     } yield user
 
   override def updateUser(user: User): IO[Either[UserNotFound.type, User]] =

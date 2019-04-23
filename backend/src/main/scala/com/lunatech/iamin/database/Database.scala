@@ -4,7 +4,6 @@ import java.sql.Connection
 
 import cats.effect.{IO, Resource}
 import com.lunatech.iamin.config.DatabaseConfig
-import com.lunatech.iamin.database
 import liquibase.Liquibase
 import liquibase.database.jvm.JdbcConnection
 import liquibase.resource.ClassLoaderResourceAccessor
@@ -13,7 +12,7 @@ import scala.util.{Failure, Success, Try}
 
 object Database {
 
-  def create(config: DatabaseConfig): Resource[IO, database.Profile.backend.DatabaseDef] = {
+  def create(config: DatabaseConfig): Resource[IO, Profile.backend.DatabaseDef] = {
     Resource.make {
       val driver = new org.postgresql.Driver()
       IO(Profile.api.Database.forDriver(driver, config.url, config.user, config.password))

@@ -1,7 +1,7 @@
 package com.lunatech.iamin.utils
 
 import com.lunatech.iamin.domain.users.User
-import com.lunatech.iamin.rest.definitions.PostUsersRequest
+import com.lunatech.iamin.endpoints.definitions.PostUsersRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck._
 

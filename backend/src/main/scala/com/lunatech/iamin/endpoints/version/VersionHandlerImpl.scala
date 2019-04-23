@@ -1,8 +1,7 @@
-package com.lunatech.iamin.domain.version
+package com.lunatech.iamin.endpoints.version
 
 import cats.effect.{Async, IO}
-import com.lunatech.iamin.rest.definitions.VersionResponse
-import com.lunatech.iamin.rest.version.{GetVersionResponse, VersionHandler}
+import com.lunatech.iamin.endpoints.definitions.VersionResponse
 import com.lunatech.iamin.utils.BuildInfo
 
 class VersionHandlerImpl[F[_] : Async](buildInfo: BuildInfo) extends VersionHandler[F] {

@@ -1,5 +1,5 @@
 // AUTO-GENERATED Slick data model for table Availabilities, DO NOT EDIT
-// generated at 2019-04-17T12:28:16.791
+// generated at 2019-04-23T14:38:43.333
 
 package com.lunatech.iamin.database.tables
 

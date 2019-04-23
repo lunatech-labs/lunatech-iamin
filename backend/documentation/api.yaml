@@ -235,16 +235,18 @@ components:
       description: Id of the specific user
       required: true
       schema:
-        type: string
-        # TODO: narrow type
+        type: integer
+        format: int64
+        # TODO: use encoded string
     AvailabilityIdParam:
       name: availabilityId
       in: path
       description: Id of the specific availability
       required: true
       schema:
-        type: string
-        # TODO: narrow type
+        type: integer
+        format: int64
+        # TODO: use encoded string
   schemas:
     VersionResponse:
       type: object
@@ -264,7 +266,8 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         display_name:
           type: string
       required:
@@ -294,7 +297,8 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         date:
           type: string
           format: date

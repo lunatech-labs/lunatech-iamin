@@ -9,7 +9,6 @@ import com.lunatech.iamin.endpoints.version.{VersionHandlerImpl, VersionResource
 import com.lunatech.iamin.repository.slick.UserRepositorySlickInterpreter
 import com.lunatech.iamin.utils.BuildInfo
 import fs2.Stream
-import org.hashids.Hashids
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
@@ -33,10 +32,9 @@ object Main extends IOApp {
     def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
       val userRepository = new UserRepositorySlickInterpreter[F](db)
-      val hashids = new Hashids(config.application.hashids.secret, config.application.hashids.minLength)
       val httpApp = (
         new VersionResource[F]().routes(new VersionHandlerImpl[F](BuildInfo)) <+>
-          new UsersResource[F]().routes(new UsersHandlerImpl[F](hashids, userRepository))
+          new UsersResource[F]().routes(new UsersHandlerImpl[F](userRepository))
         ).orNotFound
       val finalHttpApp = Logger(logHeaders = true, logBody = true)(httpApp)
 

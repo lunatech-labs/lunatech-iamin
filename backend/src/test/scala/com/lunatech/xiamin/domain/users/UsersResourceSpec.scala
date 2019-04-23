@@ -3,7 +3,6 @@ package com.lunatech.xiamin.domain.users
 import cats.effect.IO
 import com.lunatech.iamin.endpoints.users.UsersResource
 import com.lunatech.iamin.utils.UsersResourceArbitraries
-import org.hashids.Hashids
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{Method, Request, Status, Uri, _}

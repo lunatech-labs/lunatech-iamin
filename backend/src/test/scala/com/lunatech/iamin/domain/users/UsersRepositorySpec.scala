@@ -32,7 +32,7 @@ trait UsersRepositorySpec
       }).unsafeRunSync()
     }
 
-    "holds users" in {
+    "should hold users" in {
       forAll { (displayName1: String, displayName2: String) =>
         (for {
           user1 <- repo.createUser(displayName1)

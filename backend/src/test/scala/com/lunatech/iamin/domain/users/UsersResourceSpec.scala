@@ -4,123 +4,165 @@ import cats.effect.IO
 import com.lunatech.iamin.rest.definitions.UsersListResponse._
 import com.lunatech.iamin.rest.definitions.{PostUsersRequest, UserResponse, UsersListResponse}
 import com.lunatech.iamin.rest.users.UsersResource
-import io.circe.Json
-import io.circe.syntax._
+import com.lunatech.iamin.utils.UsersResourceArbitraries
 import org.hashids.Hashids
 import org.http4s.circe._
-import org.http4s.dsl.io._
-import org.http4s.{Method, Request, Response, Status, Uri}
+import org.http4s.dsl.Http4sDsl
+import org.http4s.{Method, Request, Status, Uri, _}
+import org.scalacheck.Arbitrary._
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{EitherValues, FreeSpec, Matchers}
 
-class UsersResourceSpec extends FreeSpec with Matchers with EitherValues {
+class UsersResourceSpec
+  extends FreeSpec
+    with UsersResourceArbitraries
+    with GeneratorDrivenPropertyChecks
+    with Matchers
+    with EitherValues
+    with Http4sDsl[IO] {
 
   private val hashids = new Hashids("secret")
   private val repo = new InMemoryUsersRepository()
-
   private val resource = new UsersResource[IO].routes(new UsersHandlerImpl[IO](hashids, repo))
 
-  private var user1: UserResponse = _
-  private var user2: UserResponse = _
+  implicit private val postUsersRequestEnc: EntityEncoder[IO, PostUsersRequest]= jsonEncoderOf
+  implicit private val userResponseDec: EntityDecoder[IO, UserResponse] = jsonOf
+  implicit private val usersListResponseDec: EntityDecoder[IO, UsersListResponse] = jsonOf
 
   "users resource" - {
 
     "GET /users should" - {
-       "return an empty list initially" in {
-         val response = serve(Request[IO](Method.GET, Uri.uri("/users")))
+      "return an empty list initially" in {
+        (for {
+           getUsersResponse <- resource.orNotFound(Request[IO](Method.GET, Uri.uri("/users")))
+           usersList        <- getUsersResponse.as[UsersListResponse]
+         } yield {
+           getUsersResponse.status shouldBe Status.Ok
 
-         response.status shouldBe Status.Ok
-         response.as[Json].unsafeRunSync() shouldBe UsersListResponse(IndexedSeq.empty[UserResponse]).asJson
+           usersList shouldBe UsersListResponse(IndexedSeq.empty[UserResponse])
+         }).unsafeRunSync()
        }
+
+      "return users when available" in {
+        forAll { postUserRequest: PostUsersRequest =>
+          (for {
+            postUserResponse <- resource.orNotFound(Request[IO](Method.POST, Uri.uri("/users")).withEntity(postUserRequest))
+            user             <- postUserResponse.as[UserResponse]
+            getUsersResponse <- resource.orNotFound(Request[IO](Method.GET, Uri.uri("/users")))
+            usersList        <- getUsersResponse.as[UsersListResponse]
+          } yield {
+            postUserResponse.status shouldBe Status.Ok
+
+            getUsersResponse.status shouldBe Status.Ok
+
+            usersList.items should contain(user)
+          }).unsafeRunSync()
+        }
+      }
     }
 
     "POST /users should" - {
-      "create user1" in {
-        val response = serve(Request[IO](Method.POST, Uri.uri("/users")).withEntity(PostUsersRequest("Alice").asJson))
+      "create users" in {
+        forAll { postUserRequest: PostUsersRequest =>
+          (for {
+            postUserResponse <- resource.orNotFound(Request[IO](Method.POST, Uri.uri("/users")).withEntity(postUserRequest))
+            createdUser      <- postUserResponse.as[UserResponse]
+            getUserResponse  <- resource.orNotFound(Request[IO](Method.GET, Uri.unsafeFromString(s"/users/${createdUser.id}")))
+            retrievedUser    <- getUserResponse.as[UserResponse]
+          } yield {
+            postUserResponse.status shouldBe Status.Ok
 
-        response.status shouldBe Status.Ok
+            getUserResponse.status shouldBe Status.Ok
 
-        val user = response.as[Json].unsafeRunSync().as[UserResponse].right.value
-
-        user.displayName shouldBe "Alice"
-
-        user1 = user
-      }
-
-      "create user2" in {
-        val response = serve(Request[IO](Method.POST, Uri.uri("/users")).withEntity(PostUsersRequest("Bob").asJson))
-
-        response.status shouldBe Status.Ok
-
-        val user = response.as[Json].unsafeRunSync().as[UserResponse].right.value
-
-        user.displayName shouldBe "Bob"
-
-        user2 = user
+            retrievedUser shouldBe createdUser
+          }).unsafeRunSync()
+        }
       }
     }
 
     "GET /users/:id should" - {
       "not return unknown user" in {
-        val response = serve(Request[IO](Method.GET, Uri.uri("/users/f00b45")))
-
-        response.status shouldBe Status.NotFound
+        (for {
+          getUserResponse <- resource.orNotFound(Request[IO](Method.GET, Uri.uri("/users/f00b45")))
+        } yield {
+          getUserResponse.status shouldBe Status.NotFound
+        }).unsafeRunSync()
       }
 
       "return user" in {
-        val response = serve(Request[IO](Method.GET, Uri.unsafeFromString(s"/users/${user1.id}")))
+        forAll { postUserRequest: PostUsersRequest =>
+          (for {
+            postUserResponse <- resource.orNotFound(Request[IO](Method.POST, Uri.uri("/users")).withEntity(postUserRequest))
+            createdUser      <- postUserResponse.as[UserResponse]
+            getUserResponse  <- resource.orNotFound(Request[IO](Method.GET, Uri.unsafeFromString(s"/users/${createdUser.id}")))
+            retrievedUser    <- getUserResponse.as[UserResponse]
+          } yield {
+            postUserResponse.status shouldBe Status.Ok
 
-        response.status shouldBe Status.Ok
+            getUserResponse.status shouldBe Status.Ok
 
-        val user = response.as[Json].unsafeRunSync().as[UserResponse].right.value
-
-        user.displayName shouldBe "Alice"
+            retrievedUser shouldBe createdUser
+          }).unsafeRunSync()
+        }
       }
     }
 
     "PATCH /users/:id should" - {
       "not update unknown user" in {
-        val response = serve(Request[IO](Method.PATCH, Uri.uri("/users/f00b45")).withEntity(PostUsersRequest("Carol").asJson))
-
-        response.status shouldBe Status.NotFound
+        (for {
+          patchUserResponse <- resource.orNotFound(Request[IO](Method.PATCH, Uri.uri("/users/f00b45")).withEntity(PostUsersRequest("")))
+        } yield {
+          patchUserResponse.status shouldBe Status.NotFound
+        }).unsafeRunSync()
       }
 
       "update user" in {
-        val response = serve(Request[IO](Method.PATCH, Uri.unsafeFromString(s"/users/${user1.id}")).withEntity(PostUsersRequest("Carol").asJson))
+        forAll { (postUserRequest: PostUsersRequest, newDisplayName: String) =>
+          (for {
+            postUserResponse  <- resource.orNotFound(Request[IO](Method.POST, Uri.uri("/users")).withEntity(postUserRequest))
+            createdUser       <- postUserResponse.as[UserResponse]
+            patchUserResponse <- resource.orNotFound(Request[IO](Method.PATCH, Uri.unsafeFromString(s"/users/${createdUser.id}")).withEntity(PostUsersRequest(newDisplayName)))
+            updatedUser       <- patchUserResponse.as[UserResponse]
+            getUserResponse   <- resource.orNotFound(Request[IO](Method.GET, Uri.unsafeFromString(s"/users/${createdUser.id}")))
+            retrievedUser     <- getUserResponse.as[UserResponse]
+          } yield {
+            postUserResponse.status shouldBe Status.Ok
 
-        response.status shouldBe Status.Ok
+            patchUserResponse.status shouldBe Status.Ok
 
-        val user = response.as[Json].unsafeRunSync().as[UserResponse].right.value
+            updatedUser shouldBe createdUser.copy(displayName = newDisplayName)
 
-        user.id shouldBe user1.id
-        user.displayName shouldBe "Carol"
+            updatedUser shouldBe retrievedUser
+          }).unsafeRunSync()
+        }
       }
     }
 
     "DELETE /users/:id should" - {
       "not delete unknown user" in {
-        val response = serve(Request[IO](Method.DELETE, Uri.uri("/users/f00b45")))
-
-        response.status shouldBe Status.NotFound
+        (for {
+          deleteUserResponse <- resource.orNotFound(Request[IO](Method.DELETE, Uri.uri("/users/f00b45")).withEntity(PostUsersRequest("")))
+        } yield {
+          deleteUserResponse.status shouldBe Status.NotFound
+        }).unsafeRunSync()
       }
 
       "delete user" in {
-        val response = serve(Request[IO](Method.DELETE, Uri.unsafeFromString(s"/users/${user1.id}")))
+        forAll { postUserRequest: PostUsersRequest =>
+          (for {
+            postUserResponse   <- resource.orNotFound(Request[IO](Method.POST, Uri.uri("/users")).withEntity(postUserRequest))
+            createdUser        <- postUserResponse.as[UserResponse]
+            deleteUserResponse <- resource.orNotFound(Request[IO](Method.DELETE, Uri.unsafeFromString(s"/users/${createdUser.id}")))
+            getUserResponse    <- resource.orNotFound(Request[IO](Method.GET, Uri.unsafeFromString(s"/users/${createdUser.id}")))
+          } yield {
+            postUserResponse.status shouldBe Status.Ok
 
-        response.status shouldBe Status.NoContent
+            deleteUserResponse.status shouldBe Status.NoContent
+
+            getUserResponse.status shouldBe Status.NotFound
+          }).unsafeRunSync()
+        }
       }
     }
-
-    "GET /users should" - {
-      "return user left" in {
-        val response = serve(Request[IO](Method.GET, Uri.uri("/users")))
-
-        response.status shouldBe Status.Ok
-        response.as[Json].unsafeRunSync() shouldBe UsersListResponse(IndexedSeq(user2)).asJson
-      }
-    }
-  }
-
-  private def serve(request: Request[IO]): Response[IO] = {
-    resource.orNotFound(request).unsafeRunSync()
   }
 }

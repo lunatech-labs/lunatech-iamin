@@ -51,11 +51,13 @@ sbt runMain com.lunatech.iamin.rest.Main
 
 ## Creating and managing API endpoints
 
-Location of the api specification is `documentation/api.yaml`, format used is
+We use Twilio's [Guardrail](https://github.com/twilio/guardrail) to generate web server.
+
+Location of the api specification is `src/main/resources/api.yaml`, format used is
 [OpenAPI specification v3.x.x](https://swagger.io/specification).
 
->Because of the [Guardrail](https://github.com/twilio/guardrail) code generator, some additional attributes are required
-on resources (namely `operationId` and `x-scala-package`), find the full list extensions
+>Because of how the code generator works, some additional attributes are required on resources (namely `operationId`
+and `x-scala-package`), find the full list extensions
 [here](https://github.com/twilio/guardrail/blob/master/docs/book.md#guardrail-extensions).
 
 When you made some changes to the specification you can trigger the code generation by compiling the project:
@@ -65,14 +67,17 @@ sbt compile
 ```
 This will save the endpoint `Handler` stubs in the `src_managed` directory in the form a a Scala `trait` and a companion
 object.
-Put your implementation in `src/scala/com/lunatech/iamin/rest/{endpoint}/impl/{endpoint}Handler`, take a look at what's
+Put your implementation in `src/scala/com/lunatech/iamin/endpoints/{endpoint}/{endpoint}Handler`, take a look at what's
 already there as a reference.
 
-If the endpoint you created is new, you also must add its routes to the server in `com.lunatech.iamin.rest.IaminServer`,
+If the endpoint you created is new, you also must add its routes to the server in `com.lunatech.iamin.Main`,
 again look at what's there for reference.
 
 
 ## Managing database schema and generated code
+
+We use [Liquibase](https://www.liquibase.org) for database migrations and [Slick](http://slick.lightbend.com)'s code 
+generator for type safe queries.
 
 Find the database migrations in `src/main/resources/migrations`, files are in Liquibase's
 [xml format](https://www.liquibase.org/documentation/xml_format.html).
@@ -83,10 +88,10 @@ To create a new migration, use the `createLiquibaseMigration` command:
 sbt createLiquibaseMigration "short description"
 ```
 
-This will put a new migration file in the migrations directort for you to implement.
+This will put a new migration file in the migrations directory for you to implement.
 
-Please observer the naming convention of the files: `yyyyMMdd_short_description.xml`, it is important to have an
-ascending order since Liquibase applies these migrations in order.
+Please use the naming convention of the files: `yyyyMMdd_short_description.xml` since Liquibase will apply the all the 
+migrations in the directory in ascending order.
 
 > Never change an existing migration once it has been applied to the database! If you need to change something just add
 a new migration.
@@ -107,7 +112,7 @@ This sbt task will:
 4. Save the generated code to `com.lunatech.iamin.database.tables`
 5. Destroy the temporary database
 
-Don't forget to commit the (newly) generated code to the Git repository.
+Don't forget to commit the (newly) generated code to the Git repository and remove any unused generated code.
 
 
 ## Stack

@@ -8,6 +8,7 @@ import cats.implicits._
 import com.lunatech.iamin.database.Profile.api._
 import com.lunatech.iamin.database.tables.{OccasionsRow, Tables}
 import com.lunatech.iamin.domain.occasions.{CreateFailed, Occasion, OccasionRepository, UpdateFailed}
+import io.scalaland.chimney.dsl._
 import org.postgresql.util.PSQLException
 
 class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends OccasionRepository[F] {
@@ -35,11 +36,7 @@ class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends
         .map(_.isPresent)
         .update(occasion.isPresent)
     } map { affectedRows =>
-      if (affectedRows eqv 1) {
-        occasion.asRight[UpdateFailed]
-      } else {
-        UpdateFailed.UserNotFound.asLeft[Occasion]
-      }
+      if (affectedRows eqv 1) occasion.asRight[UpdateFailed] else UpdateFailed.UserNotFound.asLeft[Occasion]
     }
   }
 
@@ -49,8 +46,7 @@ class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends
         .filter(o => o.userId === userId.bind && o.date === date.bind)
         .delete
     } map { affectedRows =>
-      if (affectedRows eqv 1) ().some
-      else none[Unit]
+      if (affectedRows eqv 1) ().some else none[Unit]
     }
   }
 
@@ -60,7 +56,7 @@ class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends
         .filter(o => o.userId === userId.bind && o.date === date.bind)
         .result
         .headOption
-    } map { rows => rows.map(r => Occasion(r.userId, r.date, r.isPresent)) }
+    } map { _.map(_.transformInto[Occasion]) }
   }
 
   override def list(userId: Long, from: LocalDate, to: LocalDate): F[Seq[Occasion]] = implicitly[LiftIO[F]].liftIO {
@@ -69,6 +65,6 @@ class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends
         .filter { o => o.userId === userId.bind && o.date > from.bind && o.date < to.bind }
         .sortBy(_.date)
         .result
-    } map { rows => rows.map(r => Occasion(r.userId, r.date, r.isPresent)) }
+    } map { _.map(_.transformInto[Occasion]) }
   }
 }

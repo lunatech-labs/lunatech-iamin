@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter
 
 import scala.util.{Failure, Success, Try}
 
+val ChimneyVersion = "0.3.1"
 val CirceVersion = "0.11.1"
 val DoobieVersion = "0.6.0"
 val HashidsVersion = "1.0.3"
@@ -55,6 +56,7 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-generic" % CirceVersion,
       "io.circe" %% "circe-java8" % CirceVersion,
       "io.circe" %% "circe-parser" % CirceVersion,
+      "io.scalaland" %% "chimney" % ChimneyVersion,
       "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,

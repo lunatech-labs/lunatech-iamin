@@ -117,16 +117,16 @@ Don't forget to commit the (newly) generated code to the Git repository and remo
 
 ## Stack
 
-- [PostgreSQL](https://www.postgresql.org) database
-- [Scala](https://www.scala-lang.org) language
-- [OpenAPI](https://swagger.io) service definition and documentation
+- [Chimney](https://scalalandio.github.io/chimney) data transformations
+- [Circe](https://circe.github.io/circe) json serialization
 - [Guardrail](https://github.com/twilio/guardrail) OpenAPI to Http4s code generator
-- [PureConfig](https://pureconfig.github.io) Configuration parsing
 - [Http4s](https://http4s.org) web server
 - [Liquibase](https://www.liquibase.org) database migrations
-- [Slick](http://slick.lightbend.com) database access
-- [Circe](https://circe.github.io/circe) json serialization
-- [ScalaTest]( http://www.scalatest.org) testing
+- [OpenAPI](https://swagger.io) service definition and documentation
+- [PostgreSQL](https://www.postgresql.org) database
+- [PureConfig](https://pureconfig.github.io) Configuration parsing
+- [Scala](https://www.scala-lang.org) language
 - [ScalaCheck](https://www.scalacheck.org) property testing
+- [ScalaTest]( http://www.scalatest.org) testing
+- [Slick](http://slick.lightbend.com) database access
 - [Wartremover](http://www.wartremover.org) code linting
-- frontend stuff TBD

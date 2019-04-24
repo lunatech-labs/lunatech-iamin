@@ -5,33 +5,37 @@ import cats.implicits._
 import com.lunatech.iamin.domain.users.{User, UserRepository}
 import com.lunatech.iamin.endpoints.definitions.{PatchUserRequestJson, PostUserRequestJson, UserResponseJson, UsersResponseJson}
 import com.lunatech.iamin.endpoints.users._
+import io.scalaland.chimney.dsl._
 
 class UsersHandlerImpl[F[_] : Async](userRepo: UserRepository[F]) extends UsersHandler[F] {
 
   override def getUsers(respond: GetUsersResponse.type)(): F[GetUsersResponse] = {
-    for {
-      users <- userRepo.list(0, 100)  // TODO: Implement pagination
-      usersJson <- users.map(user => UserResponseJson(user.id, user.displayName)).pure[F]
-    } yield respond.Ok(UsersResponseJson(usersJson.toIndexedSeq))
+    userRepo.list(0, 100) map { users =>
+      users.map(_.transformInto[definitions.UserResponseJson]).toIndexedSeq
+    } map {
+      UsersResponseJson(_)
+    } map { user =>
+      respond.Ok(user)
+    }
   }
 
   override def getUsersById(respond: GetUsersByIdResponse.type)(userId: Long): F[GetUsersByIdResponse] = {
     userRepo.get(userId) map {
       case None => respond.NotFound
-      case Some(user) => respond.Ok(UserResponseJson(user.id, user.displayName))
+      case Some(user) => respond.Ok(user)
     }
   }
 
   override def postUsers(respond: PostUsersResponse.type)(body: PostUserRequestJson): F[PostUsersResponse] = {
     userRepo.create(User(0, body.displayName)) map { user =>
-      respond.Ok(UserResponseJson(user.id, user.displayName))
+      respond.Ok(user)
     }
   }
 
   override def patchUserById(respond: PatchUserByIdResponse.type)(userId: Long, body: PatchUserRequestJson): F[PatchUserByIdResponse] = {
     userRepo.update(User(userId, body.displayName)) map {
       case None => respond.NotFound
-      case Some(user) => respond.Ok(UserResponseJson(user.id, user.displayName))
+      case Some(user) => respond.Ok(user)
     }
   }
 
@@ -41,4 +45,6 @@ class UsersHandlerImpl[F[_] : Async](userRepo: UserRepository[F]) extends UsersH
       case Some(_) => respond.NoContent
     }
   }
+
+  private implicit def userIntoUserResponseJson(user: User): UserResponseJson = user.transformInto[UserResponseJson]
 }

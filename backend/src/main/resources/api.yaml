@@ -4,15 +4,15 @@ info:
   version: 0.0.1-SNAPSHOT
 tags:
   - name: version
+    description: Everything about versions
   - name: users
     description: Everything regarding user management
-  - name: availabilities
-    description: Everything about availabilities
+  - name: occasions
+    description: Everything about occasions
 paths:
   /version:
     get:
-      tags:
-        - version
+      tags: [version]
       x-scala-package: version
       operationId: getVersion
       summary: Return the app's version
@@ -22,11 +22,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionResponse'
+                $ref: '#/components/schemas/VersionResponseJson'
   /users:
     get:
-      tags:
-        - users
+      tags: [users]
       x-scala-package: users
       operationId: getUsers
       summary: Retrieve a list of all users
@@ -36,10 +35,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UsersListResponse'
+                $ref: '#/components/schemas/UsersResponseJson'
     post:
-      tags:
-        - users
+      tags: [users]
       x-scala-package: users
       operationId: postUsers
       summary: Create a new user
@@ -48,7 +46,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostUsersRequest'
+              $ref: '#/components/schemas/PostUserRequestJson'
         required: true
       responses:
         200:
@@ -56,40 +54,36 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/UserResponseJson'
   /users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserIdParam'
     get:
-      tags:
-        - users
+      tags: [users]
       x-scala-package: users
       operationId: getUsersById
       summary: Retrieves a specific user
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
       responses:
         200:
           description: Requested user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/UserResponseJson'
         404:
           description: Requested user was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
     patch:
-      tags:
-        - users
+      tags: [users]
       x-scala-package: users
       operationId: patchUserById
       summary: Updates a specific user
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
       requestBody:
         description: Updated user
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostUsersRequest' # TODO: Make dedicated type
+              $ref: '#/components/schemas/PatchUserRequestJson'
         required: true
       responses:
         200:
@@ -97,135 +91,118 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/UserResponseJson'
         404:
           description: Requested user was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
     delete:
-      tags:
-        - users
+      tags: [users]
       x-scala-package: users
       operationId: deleteUserById
       summary: Deletes a specific user
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
       responses:
         204:
           description: Successfully deleted user
         404:
           description: Requested user was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
+  /users/{userId}/occasions:
     parameters:
-      - name: userId
-        in: path
-        description: Id of the specific user
-        required: true
-        schema:
-          type: string
-  /users/{userId}/availabilities:
+      - $ref: '#/components/parameters/UserIdParam'
     get:
-      tags:
-        - availabilities
-      x-scala-package: users
-      operationId: getUserByIdAvailabilities
-      summary: Retrieves all availabilities of the user
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
+      tags: [occasions]
+      x-scala-package: occasions
+      operationId: getOccasions
+      summary: Retrieves all occasions of the user
       responses:
         200:
-          description: List of all availabilities of the user
+          description: List of all available occasions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AvailabilitiesListResponse'
+                $ref: '#/components/schemas/OccasionsResponseJson'
         404:
-          description: Requested user or availability was not found
+          description: Requested user was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
     post:
-      tags:
-        - availabilities
-      x-scala-package: users
-      operationId: postUserByIdAvailabilities
-      summary: Creates a new availability for the user
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
+      tags: [occasions]
+      x-scala-package: occasions
+      operationId: postOccasions
+      summary: Creates a new occasion for the user
       requestBody:
-        description: New availability create
+        description: New occasion to create
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostAvailabilityRequest'
+              $ref: '#/components/schemas/PostOccasionRequestJson'
         required: true
       responses:
         200:
-          description: Successfully created new availability
+          description: Successfully created new occasion
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AvailabilityResponse'
+                $ref: '#/components/schemas/OccasionResponseJson'
         404:
-          description: Requested user or availability was not found
+          description: Requested user was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
-  /users/{userId}/availabilities/{availabilityId}:
+        409:
+          description: Occasions date overlaps with already existing occasion
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+  /users/{userId}/occasions/{date}:
+    parameters:
+      - $ref: '#/components/parameters/UserIdParam'
+      - $ref: '#/components/parameters/DateParam'
     get:
-      tags:
-        - availabilities
-      x-scala-package: users
-      operationId: getUserByIdAvailabilitiesById
-      summary: Retrieves a specific availability of the user
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
-        - $ref: '#/components/parameters/AvailabilityIdParam'
+      tags: [occasions]
+      x-scala-package: occasions
+      operationId: getOccasionByDate
+      summary: Retrieves an occasion by date
       responses:
         200:
-          description: Requested availability
+          description: Requested occasion
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AvailabilityResponse'
+                $ref: '#/components/schemas/OccasionResponseJson'
         404:
-          description: Requested user or availability was not found
+          description: Requested user or occasion was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
     patch:
-      tags:
-        - availabilities
-      x-scala-package: users
-      operationId: patchUserByIdAvailabilitiesById
-      summary: Updates a specific availability of the user
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
-        - $ref: '#/components/parameters/AvailabilityIdParam'
+      tags: [occasions]
+      x-scala-package: occasions
+      operationId: patchOccasionByDate
+      summary: Updated an occasion
       requestBody:
-        description: New availability create
+        description: Updated occasion
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostAvailabilityRequest'
+              $ref: '#/components/schemas/PatchOccasionRequestJson'
         required: true
       responses:
         200:
-          description: Updated availability
+          description: Successfully updated occasion
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AvailabilityResponse'  # TODO: Make dedicated type
+                $ref: '#/components/schemas/OccasionResponseJson'
         404:
-          description: Requested user or availability was not found
+          description: Requested user or occasion was not found
+          # TODO: Add Problem as response: https://github.com/zalando/problem
+        409:
+          description: Occasions date overlaps with already existing occasion
           # TODO: Add Problem as response: https://github.com/zalando/problem
     delete:
-      tags:
-        - availabilities
-      x-scala-package: users
-      operationId: deleteUserByIdAvailabilitiesById
-      summary: Deleted a specific availability of the user
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
-        - $ref: '#/components/parameters/AvailabilityIdParam'
+      tags: [occasions]
+      x-scala-package: occasions
+      operationId: deleteOccasionByDate
+      summary: Deletes an occasion
       responses:
         204:
-          description: Successfully deleted availability
+          description: Succesfully deleted occasion
         404:
-          description: Requested user or availability was not found
+          description: Requested user or occasion was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
 components:
   parameters:
@@ -238,31 +215,37 @@ components:
         type: integer
         format: int64
         # TODO: use encoded string
-    AvailabilityIdParam:
-      name: availabilityId
+    DateParam:
+      name: date
       in: path
-      description: Id of the specific availability
+      description: Date of the specific occasion
       required: true
       schema:
-        type: integer
-        format: int64
-        # TODO: use encoded string
+        type: string
+#        format: date // # TODO: Enable once Guardrail fixes this
   schemas:
-    VersionResponse:
+    VersionResponseJson:
       type: object
       properties:
         version:
           type: string
       required:
         - version
-    PostUsersRequest:
+    PostUserRequestJson:
       type: object
       properties:
         display_name:
           type: string
       required:
         - display_name
-    UserResponse:
+    PatchUserRequestJson:
+      type: object
+      properties:
+        display_name:
+          type: string
+      required:
+        - display_name
+    UserResponseJson:
       type: object
       properties:
         id:
@@ -273,16 +256,16 @@ components:
       required:
         - id
         - display_name
-    UsersListResponse:
+    UsersResponseJson:
       type: object
       properties:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/UserResponse'
+            $ref: '#/components/schemas/UserResponseJson'
       required:
         - items
-    PostAvailabilityRequest:
+    PostOccasionRequestJson:
       type: object
       properties:
         date:
@@ -293,27 +276,30 @@ components:
       required:
         - date
         - is_present
-    AvailabilityResponse:
+    PatchOccasionRequestJson:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        date:
-          type: string
-          format: date
         is_present:
           type: boolean
       required:
-        - id
+        - is_present
+    OccasionResponseJson:
+      type: object
+      properties:
+        date:
+          type: string
+#          format: date
+        is_present:
+          type: boolean
+      required:
         - date
         - is_present
-    AvailabilitiesListResponse:
+    OccasionsResponseJson:
       type: object
       properties:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/AvailabilityResponse'
+            $ref: '#/components/schemas/OccasionResponseJson'
       required:
         - items

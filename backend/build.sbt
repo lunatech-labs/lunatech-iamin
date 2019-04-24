@@ -73,7 +73,12 @@ lazy val root = (project in file("."))
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
 
     guardrailTasks in Compile := List(
-      ScalaServer(file("documentation/api.yaml"), pkg = "com.lunatech.iamin.endpoints", framework = "http4s", tracing = false)
+      ScalaServer(
+        file(((Compile / resourceDirectory).value / "api.yaml").toPath.toString),
+        pkg = "com.lunatech.iamin.endpoints",
+        framework = "http4s",
+        tracing = false
+      )
     )
   )
 

@@ -1,15 +1,15 @@
 package com.lunatech.xiamin.domain.users
 
-import cats.effect.IO
-import com.lunatech.iamin.endpoints.users.UsersResource
-import com.lunatech.iamin.utils.UsersResourceArbitraries
-import org.http4s.circe._
-import org.http4s.dsl.Http4sDsl
-import org.http4s.{Method, Request, Status, Uri, _}
-import org.scalacheck.Arbitrary._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{EitherValues, FreeSpec, Matchers}
-
+//import cats.effect.IO
+//import com.lunatech.iamin.endpoints.users.UsersResource
+//import com.lunatech.iamin.utils.UsersResourceArbitraries
+//import org.http4s.circe._
+//import org.http4s.dsl.Http4sDsl
+//import org.http4s.{Method, Request, Status, Uri, _}
+//import org.scalacheck.Arbitrary._
+//import org.scalatest.prop.GeneratorDrivenPropertyChecks
+//import org.scalatest.{EitherValues, FreeSpec, Matchers}
+//
 //class UsersResourceSpec
 //  extends FreeSpec
 //    with UsersResourceArbitraries

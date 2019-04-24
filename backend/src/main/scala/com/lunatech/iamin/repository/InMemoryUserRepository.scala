@@ -1,14 +1,14 @@
-package com.lunatech.iamin.repository.inmemory
+package com.lunatech.iamin.repository
 
 import java.util.concurrent.atomic.AtomicLong
 
 import cats.Applicative
 import cats.implicits._
-import com.lunatech.iamin.domain.users.{User, UserRepositoryAlgebra}
+import com.lunatech.iamin.domain.users.{User, UserRepository}
 
 import scala.collection.concurrent.TrieMap
 
-class UserRepositoryInMemoryInterpreter[F[_] : Applicative] extends UserRepositoryAlgebra[F] {
+class InMemoryUserRepository[F[_] : Applicative] extends UserRepository[F] {
 
   private val cache = new TrieMap[Long, User]()
   private val ids = new AtomicLong(0L)
@@ -18,7 +18,7 @@ class UserRepositoryInMemoryInterpreter[F[_] : Applicative] extends UserReposito
   override def create(user: User): F[User] = {
     val id = ids.incrementAndGet()
     val toSave = user.copy(id = id)
-    cache += (id -> toSave)
+    cache.putIfAbsent(id, toSave)
     toSave.pure[F]
   }
 

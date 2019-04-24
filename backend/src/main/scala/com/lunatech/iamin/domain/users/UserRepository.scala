@@ -1,6 +1,6 @@
 package com.lunatech.iamin.domain.users
 
-trait UserRepositoryAlgebra[F[_]] {
+trait UserRepository[F[_]] {
 
   /**
     * Creates a new user, the `id` of the user might be replaced with something else.

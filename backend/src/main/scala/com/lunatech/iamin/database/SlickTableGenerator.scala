@@ -85,6 +85,7 @@ object SlickTableGenerator extends IOApp {
           }.getOrElse {
             model.tpe match {
               case "java.sql.Timestamp" => "java.time.LocalDateTime"
+              case "java.sql.Date" => "java.time.LocalDate"
               case _ => super.rawType
             }
           }

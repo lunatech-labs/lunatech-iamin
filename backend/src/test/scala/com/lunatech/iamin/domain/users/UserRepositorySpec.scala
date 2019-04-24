@@ -1,42 +1,40 @@
 package com.lunatech.iamin.domain.users
 
 import cats.effect.IO
-import com.lunatech.iamin.UserArbitratries
-import com.lunatech.iamin.repository.inmemory.UserRepositoryInMemoryInterpreter
-import com.lunatech.iamin.repository.slick.UserRepositorySlickInterpreter
+import com.lunatech.iamin.repository.{InMemoryUserRepository, SlickUserRepository}
 import com.lunatech.iamin.utils.DatabaseTest
-import org.scalacheck.Gen
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{FreeSpec, Matchers, OptionValues}
+import org.scalatest.{EitherValues, FreeSpec, Matchers, OptionValues, ParallelTestExecution}
 
-class UserRepositoryInMemoryInterpreterSpec extends UserRepositorySpec {
-  override val repo = new UserRepositoryInMemoryInterpreter[IO]()
+class InMemoryUserRepositorySpec extends UserRepositorySpec {
+  override val repo = new InMemoryUserRepository[IO]()
 }
 
-class UserRepositorySlickInterpreterSpec extends UserRepositorySpec with DatabaseTest {
-  override val repo = new UserRepositorySlickInterpreter[IO](testDatabase)
+class SlickUserRepositorySpec extends UserRepositorySpec with DatabaseTest {
+  override val repo = new SlickUserRepository[IO](testDatabase)
 }
 
 abstract class UserRepositorySpec
   extends FreeSpec
   with GeneratorDrivenPropertyChecks
-  with UserArbitratries
   with Matchers
-  with OptionValues {
+  with OptionValues
+  with EitherValues
+  with ParallelTestExecution {
+
+  val repo: UserRepository[IO]
 
   private val highIdGen = Gen.choose(1000000L, Long.MaxValue)
-
-  val repo: UserRepositoryAlgebra[IO]
+  private implicit val arbUser: Arbitrary[User] = Arbitrary[User] {
+    for {
+      id <- Gen.posNum[Long]
+      displayName <- arbitrary[String]
+    } yield User(id, displayName)
+  }
 
   "user repository" - {
-    "is empty initially" in {
-      (for {
-        users <- repo.list(0, Int.MaxValue)
-      } yield {
-        users shouldBe 'empty
-      }).unsafeRunSync()
-    }
-
     "should list users" in {
       forAll { user: User =>
         (for {
@@ -62,8 +60,10 @@ abstract class UserRepositorySpec
       forAll { user: User =>
         (for {
           created <- repo.create(user)
+          retrieved <- repo.get(created.id)
         } yield {
           created.displayName shouldBe user.displayName
+          retrieved.value.displayName shouldBe user.displayName
         }).unsafeRunSync()
       }
 
@@ -81,12 +81,12 @@ abstract class UserRepositorySpec
 
     "should be able to update user" in {
       forAll { user: User =>
-        for {
+        (for {
           created <- repo.create(user)
           updated <- repo.update(created.copy(displayName = created.displayName.reverse))
         } yield {
           updated.value.displayName shouldBe user.displayName.reverse
-        }
+        }).unsafeRunSync()
       }
     }
 
@@ -105,8 +105,10 @@ abstract class UserRepositorySpec
         (for {
           created <- repo.create(user)
           deleted <- repo.delete(created.id)
+          list <- repo.list(0, 100)
         } yield {
           deleted shouldBe Some(())
+          list should not contain(created)
         }).unsafeRunSync()
       }
     }

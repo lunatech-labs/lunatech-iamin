@@ -10,13 +10,13 @@ package object occasions {
     isPresent: Boolean
   )
 
-  trait CreateFailed extends Product with Serializable
+  sealed trait CreateFailed extends Product with Serializable
   object CreateFailed {
     case object UserNotFound extends CreateFailed
     case object DateAlreadyTaken extends CreateFailed
   }
 
-  trait UpdateFailed extends Product with Serializable
+  sealed trait UpdateFailed extends Product with Serializable
   object UpdateFailed {
     case object UserNotFound extends UpdateFailed
   }

@@ -79,7 +79,10 @@ lazy val root = (project in file("."))
         file(((Compile / resourceDirectory).value / "api.yaml").toPath.toString),
         pkg = "com.lunatech.iamin.endpoints",
         framework = "http4s",
-        tracing = false
+        tracing = false,
+        imports = List(
+          "com.lunatech.iamin.utils.guardrail.hacks._"
+        )
       )
     )
   )

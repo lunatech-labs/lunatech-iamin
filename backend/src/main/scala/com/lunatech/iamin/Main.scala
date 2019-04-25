@@ -4,10 +4,11 @@ import cats.effect._
 import cats.implicits._
 import com.lunatech.iamin.config.Config
 import com.lunatech.iamin.database.Database
+import com.lunatech.iamin.endpoints.occasions.OccasionsResource
 import com.lunatech.iamin.endpoints.users.UsersResource
 import com.lunatech.iamin.endpoints.version.VersionResource
-import com.lunatech.iamin.endpoints.{UsersHandlerImpl, VersionHandlerImpl}
-import com.lunatech.iamin.repository.SlickUserRepository
+import com.lunatech.iamin.endpoints.{OccasionsHandlerImpl, UsersHandlerImpl, VersionHandlerImpl}
+import com.lunatech.iamin.repository.{SlickOccasionRepository, SlickUserRepository}
 import com.lunatech.iamin.utils.BuildInfo
 import fs2.Stream
 import org.http4s.implicits._
@@ -21,8 +22,8 @@ object Main extends IOApp {
 
     val server = for {
       config <- Resource.liftF(Config.load())
-      db     <- Database.create(config.database)
-      _      <- Resource.liftF(Database.migrate(db.source.createConnection))
+      db <- Database.create(config.database)
+      _ <- Resource.liftF(Database.migrate(db.source.createConnection))
       server = new Server(config, db)
     } yield server
 
@@ -32,10 +33,12 @@ object Main extends IOApp {
   class Server(config: Config, db: com.lunatech.iamin.database.Profile.api.Database) {
     def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
+      val occasionsRepository = new SlickOccasionRepository[F](db)
       val userRepository = new SlickUserRepository[F](db)
       val httpApp = (
-        new VersionResource[F]().routes(new VersionHandlerImpl[F](BuildInfo)) <+>
-          new UsersResource[F]().routes(new UsersHandlerImpl[F](userRepository))
+        new OccasionsResource[F].routes(new OccasionsHandlerImpl[F](occasionsRepository)) <+>
+          new UsersResource[F].routes(new UsersHandlerImpl[F](userRepository)) <+>
+          new VersionResource[F].routes(new VersionHandlerImpl[F](BuildInfo))
         ).orNotFound
       val finalHttpApp = Logger(logHeaders = true, logBody = true)(httpApp)
 
@@ -46,4 +49,5 @@ object Main extends IOApp {
         .drain
     }
   }
+
 }

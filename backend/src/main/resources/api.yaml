@@ -114,6 +114,9 @@ paths:
       x-scala-package: occasions
       operationId: getOccasions
       summary: Retrieves all occasions of the user
+      parameters:
+        - $ref: '#/components/parameters/FromLocalDateParam'
+        - $ref: '#/components/parameters/ToLocalDateParam'
       responses:
         200:
           description: List of all available occasions
@@ -190,9 +193,6 @@ paths:
         404:
           description: Requested user or occasion was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
-        409:
-          description: Occasions date overlaps with already existing occasion
-          # TODO: Add Problem as response: https://github.com/zalando/problem
     delete:
       tags: [occasions]
       x-scala-package: occasions
@@ -222,7 +222,24 @@ components:
       required: true
       schema:
         type: string
-#        format: date // # TODO: Enable once Guardrail fixes this
+#        format: date
+#      x-scala-type: DateParam_Hack
+    FromLocalDateParam:
+      name: from
+      in: query
+      description: From date
+      schema:
+        type: string
+        format: date
+      x-scala-type: FromLocalDate_Hack # Manually implemented wrapper type to circumvent Guardrail double implicit value
+    ToLocalDateParam:
+      name: to
+      in: query
+      description: To date
+      schema:
+        type: string
+        format: date
+      x-scala-type: ToLocalDate_Hack # Manually implemented wrapper type to circumvent Guardrail double implicit value
   schemas:
     VersionResponseJson:
       type: object

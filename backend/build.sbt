@@ -54,6 +54,7 @@ lazy val root = (project in file("."))
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
       "io.circe" %% "circe-core" % CirceVersion,
       "io.circe" %% "circe-generic" % CirceVersion,
+      "io.circe" %% "circe-generic-extras" % CirceVersion,
       "io.circe" %% "circe-java8" % CirceVersion,
       "io.circe" %% "circe-parser" % CirceVersion,
       "io.scalaland" %% "chimney" % ChimneyVersion,

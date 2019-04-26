@@ -3,36 +3,24 @@ package com.lunatech.iamin.domain.occasions
 import java.time.LocalDate
 
 import cats.effect.IO
-import com.lunatech.iamin.repository.{InMemoryOccasionRepository, SlickOccasionRepository, SlickUserRepository}
-import com.lunatech.iamin.utils.DatabaseTest
+import com.lunatech.iamin.repository.InMemoryOccasionRepository
 import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.{EitherValues, FreeSpec, Matchers, OptionValues, ParallelTestExecution}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest._
 
-class InMemoryOccasionRepositorySpec extends OccasionRepositorySpec {
-  override val repo = new InMemoryOccasionRepository[IO]()
-}
-
-class SlickOccasionRepositorySpec extends OccasionRepositorySpec with DatabaseTest {
-
-  override lazy val knownUserId: Long = {
-    val userRepo = new SlickUserRepository[IO](testDatabase)
-    val id = userRepo.create(com.lunatech.iamin.domain.users.User(0, "test user")).unsafeRunSync().id
-    id
-  }
-
-  override val repo = new SlickOccasionRepository[IO](testDatabase)
-}
-
-abstract class OccasionRepositorySpec
+class OccasionServiceSpec
   extends FreeSpec
-  with GeneratorDrivenPropertyChecks
-  with Matchers
-  with OptionValues
+    with GeneratorDrivenPropertyChecks
+    with Matchers
+    with OptionValues
   with EitherValues
-  with ParallelTestExecution {
+    with ParallelTestExecution {
 
-  val repo: OccasionRepository[IO]
+  private val repo = new InMemoryOccasionRepository[IO]()
+  private val service = new OccasionService[IO](repo)
+
+  private val idGen = Gen.choose(0L, 1000000L)
+  private val unknownIdGen = Gen.choose(1000000L, Long.MaxValue)
 
   lazy val knownUserId: Long = 0L
 
@@ -52,7 +40,7 @@ abstract class OccasionRepositorySpec
         (for {
           eitherCreated <- repo.create(occasion)
           created <- IO.pure(eitherCreated.right.value)
-          list <- repo.list(created.userId, LocalDate.MIN, LocalDate.MAX)
+          list <- service.list(created.userId, LocalDate.MIN, LocalDate.MAX)
         } yield {
           list should contain(created)
         }).unsafeRunSync()
@@ -62,7 +50,7 @@ abstract class OccasionRepositorySpec
     "should not be able to get unknown occasion" in {
       forAll(unknownUserIdGen) { unknownUserId: Long =>
         (for {
-          unknown <- repo.get(unknownUserId, LocalDate.MIN)
+          unknown <- service.get(unknownUserId, LocalDate.MIN).value
         } yield {
           unknown shouldBe None
         }).unsafeRunSync()
@@ -70,7 +58,7 @@ abstract class OccasionRepositorySpec
 
       forAll(unknownDateGen) { unknownDate: LocalDate =>
         (for {
-          unknown <- repo.get(knownUserId, unknownDate)
+          unknown <- service.get(knownUserId, unknownDate).value
         } yield {
           unknown shouldBe None
         }).unsafeRunSync()
@@ -80,9 +68,9 @@ abstract class OccasionRepositorySpec
     "should not be able to create occasion with overlapping dates" in {
       forAll { occasion: Occasion =>
         (for {
-          eitherCreated <- repo.create(occasion)
+          eitherCreated <- service.create(occasion.userId, occasion.date, occasion.isPresent).value
           created <- IO.pure(eitherCreated.right.value)
-          reCreated <- repo.create(occasion)
+          reCreated <- service.create(occasion.userId, occasion.date, occasion.isPresent).value
         } yield {
           created shouldBe occasion
 
@@ -95,9 +83,9 @@ abstract class OccasionRepositorySpec
     "should be able to create and get occasion" in {
       forAll { occasion: Occasion =>
         (for {
-          eitherCreated <- repo.create(occasion)
+          eitherCreated <- service.create(occasion.userId, occasion.date, occasion.isPresent).value
           created <- IO.pure(eitherCreated.right.value)
-          maybeRetrieved <- repo.get(created.userId, created.date)
+          maybeRetrieved <- service.get(created.userId, created.date).value
           retrieved <- IO.pure(maybeRetrieved.value)
         } yield {
           created shouldBe occasion
@@ -109,7 +97,7 @@ abstract class OccasionRepositorySpec
     "should not be able to update unknown occasion" in {
       forAll(arbOccasion.arbitrary, unknownUserIdGen) { (occasion: Occasion, unknownUserId: Long) =>
         (for {
-          eitherUpdated <- repo.update(occasion.copy(userId = unknownUserId))
+          eitherUpdated <- service.update(unknownUserId, occasion.date, occasion.isPresent).value
         } yield {
           eitherUpdated.left.value shouldBe UpdateFailed.UserNotFound
         }).unsafeRunSync()
@@ -119,9 +107,9 @@ abstract class OccasionRepositorySpec
     "should be able to update occasion" in {
       forAll { occasion: Occasion =>
         (for {
-          eitherCreated <- repo.create(occasion)
+          eitherCreated <- service.create(occasion.userId, occasion.date, occasion.isPresent).value
           created <- IO.pure(eitherCreated.right.value)
-          eitherUpdated <- repo.update(created.copy(isPresent = !created.isPresent))
+          eitherUpdated <- service.update(occasion.userId, occasion.date, !occasion.isPresent).value
           updated <- IO.pure(eitherUpdated.right.value)
         } yield {
           created shouldBe occasion
@@ -133,9 +121,9 @@ abstract class OccasionRepositorySpec
     "should not be able to delete unknown occasion" in {
       forAll(arbOccasion.arbitrary, unknownUserIdGen) { (occasion: Occasion, unknownUserId: Long) =>
         (for {
-          eitherCreated <- repo.create(occasion)
+          eitherCreated <- service.create(occasion.userId, occasion.date, occasion.isPresent).value
           created <- IO.pure(eitherCreated.right.value)
-          maybeDeleted <- repo.delete(unknownUserId, created.date)
+          maybeDeleted <- service.delete(unknownUserId, created.date).value
         } yield {
           maybeDeleted shouldBe None
         }).unsafeRunSync()
@@ -145,9 +133,9 @@ abstract class OccasionRepositorySpec
     "should be to delete occasion" in {
       forAll { occasion: Occasion =>
         (for {
-          eitherCreated <- repo.create(occasion)
+          eitherCreated <- service.create(occasion.userId, occasion.date, occasion.isPresent).value
           created <- IO.pure(eitherCreated.right.value)
-          maybeDeleted <- repo.delete(created.userId, created.date)
+          maybeDeleted <- service.delete(created.userId, created.date).value
         } yield {
           maybeDeleted.value shouldBe ()
         }).unsafeRunSync()

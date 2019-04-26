@@ -4,6 +4,8 @@ import cats.effect._
 import cats.implicits._
 import com.lunatech.iamin.config.Config
 import com.lunatech.iamin.database.Database
+import com.lunatech.iamin.domain.occasions.OccasionService
+import com.lunatech.iamin.domain.users.UserService
 import com.lunatech.iamin.endpoints.occasions.OccasionsResource
 import com.lunatech.iamin.endpoints.users.UsersResource
 import com.lunatech.iamin.endpoints.version.VersionResource
@@ -34,10 +36,14 @@ object Main extends IOApp {
     def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
       val occasionsRepository = new SlickOccasionRepository[F](db)
+      val occasionService = new OccasionService[F](occasionsRepository)
+
       val userRepository = new SlickUserRepository[F](db)
+      val userService = new UserService[F](userRepository)
+
       val httpApp = (
-        new OccasionsResource[F].routes(new OccasionsHandlerImpl[F](occasionsRepository)) <+>
-          new UsersResource[F].routes(new UsersHandlerImpl[F](userRepository)) <+>
+        new OccasionsResource[F].routes(new OccasionsHandlerImpl[F](occasionService)) <+>
+          new UsersResource[F].routes(new UsersHandlerImpl[F](userService)) <+>
           new VersionResource[F].routes(new VersionHandlerImpl[F](BuildInfo))
         ).orNotFound
       val finalHttpApp = Logger(logHeaders = true, logBody = true)(httpApp)

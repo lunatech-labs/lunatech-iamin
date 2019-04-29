@@ -42,5 +42,5 @@ class InMemoryUserRepository[F[_] : Applicative] extends UserRepository[F] {
 
   /** @inheritdoc */
   override def list(offset: Long, limit: Int): F[Seq[User]] =
-    cache.values.toSeq.pure[F] // TODO: Add Pagination
+    cache.values.toSeq.sortBy(_.id).pure[F] // TODO: Add Pagination
 }

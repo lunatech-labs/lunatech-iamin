@@ -32,7 +32,7 @@ class OccasionsHandlerImpl[F[_] : Async](service: OccasionService[F], obs: IdObf
       from.fold(LocalDate.MIN)(_.inner),
       to.fold(LocalDate.MAX)(_.inner),
     ) map { occasion =>
-      respond.Ok(OccasionsResponseJson(occasion.map(o => OccasionResponseJson(o.date.toString, o.isPresent)).toIndexedSeq))
+      respond.Ok(OccasionsResponseJson(occasion.map(o => OccasionResponseJson(o.date, o.isPresent)).toIndexedSeq))
     }
   }
 
@@ -63,5 +63,5 @@ class OccasionsHandlerImpl[F[_] : Async](service: OccasionService[F], obs: IdObf
   }
 
   private implicit def occasionIntoOccasionResponseJson(occasion: Occasion): OccasionResponseJson =
-    OccasionResponseJson(occasion.date.toString, occasion.isPresent)
+    OccasionResponseJson(occasion.date, occasion.isPresent)
 }

@@ -11,7 +11,7 @@ import com.lunatech.iamin.endpoints.users.UsersResource
 import com.lunatech.iamin.endpoints.version.VersionResource
 import com.lunatech.iamin.endpoints.{OccasionsHandlerImpl, UsersHandlerImpl, VersionHandlerImpl}
 import com.lunatech.iamin.repository.{SlickOccasionRepository, SlickUserRepository}
-import com.lunatech.iamin.utils.BuildInfo
+import com.lunatech.iamin.utils.{BuildInfo, HashidsIdObfuscator}
 import fs2.Stream
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -35,6 +35,8 @@ object Main extends IOApp {
   class Server(config: Config, db: com.lunatech.iamin.database.Profile.api.Database) {
     def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
+      val idObfuscator = new HashidsIdObfuscator(config.application.hashids)
+
       val occasionsRepository = new SlickOccasionRepository[F](db)
       val occasionService = new OccasionService[F](occasionsRepository)
 
@@ -42,8 +44,8 @@ object Main extends IOApp {
       val userService = new UserService[F](userRepository)
 
       val httpApp = (
-        new OccasionsResource[F].routes(new OccasionsHandlerImpl[F](occasionService)) <+>
-          new UsersResource[F].routes(new UsersHandlerImpl[F](userService)) <+>
+        new OccasionsResource[F].routes(new OccasionsHandlerImpl[F](occasionService, idObfuscator)) <+>
+          new UsersResource[F].routes(new UsersHandlerImpl[F](userService, idObfuscator)) <+>
           new VersionResource[F].routes(new VersionHandlerImpl[F](BuildInfo))
         ).orNotFound
       val finalHttpApp = Logger(logHeaders = true, logBody = true)(httpApp)

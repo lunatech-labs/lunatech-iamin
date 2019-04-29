@@ -120,6 +120,7 @@ Don't forget to commit the (newly) generated code to the Git repository and remo
 - [Chimney](https://scalalandio.github.io/chimney) data transformations
 - [Circe](https://circe.github.io/circe) json serialization
 - [Guardrail](https://github.com/twilio/guardrail) OpenAPI to Http4s code generator
+- [Hashids](https://github.com/10cella/hashids-java) user facing id obfuscation
 - [Http4s](https://http4s.org) web server
 - [Liquibase](https://www.liquibase.org) database migrations
 - [OpenAPI](https://swagger.io) service definition and documentation

@@ -58,6 +58,7 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-java8" % CirceVersion,
       "io.circe" %% "circe-parser" % CirceVersion,
       "io.scalaland" %% "chimney" % ChimneyVersion,
+      "org.hashids" % "hashids" % HashidsVersion,
       "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,

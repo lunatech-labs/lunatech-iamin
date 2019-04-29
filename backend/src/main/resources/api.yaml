@@ -55,7 +55,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponseJson'
-  /users/{userId}:
+  /users/{obfuscatedUserId}:
     parameters:
       - $ref: '#/components/parameters/UserIdParam'
     get:
@@ -106,7 +106,7 @@ paths:
         404:
           description: Requested user was not found
           # TODO: Add Problem as response: https://github.com/zalando/problem
-  /users/{userId}/occasions:
+  /users/{obfuscatedUserId}/occasions:
     parameters:
       - $ref: '#/components/parameters/UserIdParam'
     get:
@@ -152,7 +152,7 @@ paths:
         409:
           description: Occasions date overlaps with already existing occasion
           # TODO: Add Problem as response: https://github.com/zalando/problem
-  /users/{userId}/occasions/{date}:
+  /users/{obfuscatedUserId}/occasions/{date}:
     parameters:
       - $ref: '#/components/parameters/UserIdParam'
       - $ref: '#/components/parameters/DateParam'
@@ -207,14 +207,12 @@ paths:
 components:
   parameters:
     UserIdParam:
-      name: userId
+      name: obfuscatedUserId
       in: path
       description: Id of the specific user
       required: true
       schema:
-        type: integer
-        format: int64
-        # TODO: use encoded string
+        type: string
     DateParam:
       name: date
       in: path
@@ -266,8 +264,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
         display_name:
           type: string
       required:

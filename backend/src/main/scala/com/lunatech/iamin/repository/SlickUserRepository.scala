@@ -60,9 +60,9 @@ class SlickUserRepository[F[_] : Applicative : LiftIO](db: Database) extends Use
   override def list(offset: Long, limit: Int): F[Seq[User]] = implicitly[LiftIO[F]].liftIO {
     tx {
       Tables.Users
+        .sortBy(_.id)
         .filter(_.id > offset.bind)
         .take(limit)
-        .sortBy(_.id)
         .result
     } map { _.map(_.transformInto[User]) }
   }

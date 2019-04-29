@@ -39,7 +39,7 @@ abstract class UserRepositorySpec
       forAll { user: User =>
         (for {
           created <- repo.create(user)
-          list <- repo.list(0, 100)
+          list <- repo.list(0, Int.MaxValue)
         } yield {
           list should contain(created)
         }).unsafeRunSync()

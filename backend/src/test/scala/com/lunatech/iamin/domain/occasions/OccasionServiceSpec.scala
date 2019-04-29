@@ -19,9 +19,6 @@ class OccasionServiceSpec
   private val repo = new InMemoryOccasionRepository[IO]()
   private val service = new OccasionService[IO](repo)
 
-  private val idGen = Gen.choose(0L, 1000000L)
-  private val unknownIdGen = Gen.choose(1000000L, Long.MaxValue)
-
   lazy val knownUserId: Long = 0L
 
   private val unknownUserIdGen = Gen.choose(1000000L, Long.MaxValue)

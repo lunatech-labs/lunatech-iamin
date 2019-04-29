@@ -29,6 +29,9 @@ paths:
       x-scala-package: users
       operationId: getUsers
       summary: Retrieve a list of all users
+      parameters:
+        - $ref: '#/components/parameters/PaginationOffsetIdParam'
+        - $ref: '#/components/parameters/PaginationLimitParam'
       responses:
         200:
           description: List of all users
@@ -237,6 +240,21 @@ components:
         type: string
         format: date
       x-scala-type: ToLocalDate_Hack # Manually implemented wrapper type to circumvent Guardrail double implicit value
+    PaginationOffsetIdParam:
+      name: maybeObfuscatedOffsetId
+      in: query
+      description: Offset id to start from
+      schema:
+        type: string
+    PaginationLimitParam:
+      name: maybeLimit
+      in: query
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 10
   schemas:
     VersionResponseJson:
       type: object

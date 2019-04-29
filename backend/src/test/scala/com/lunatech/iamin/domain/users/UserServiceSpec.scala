@@ -16,7 +16,6 @@ class UserServiceSpec
   private val repo = new InMemoryUserRepository[IO]()
   private val service = new UserService[IO](repo)
 
-  private val idGen = Gen.choose(0L, 1000000L)
   private val unknownIdGen = Gen.choose(1000000L, Long.MaxValue)
 
   "user service" - {
@@ -24,7 +23,7 @@ class UserServiceSpec
       forAll { displayName: String =>
         (for {
           created <- service.create(displayName)
-          list <- service.list(0, 100)
+          list <- service.list(0, Int.MaxValue)
         } yield {
           list should contain(created)
         }).unsafeRunSync()

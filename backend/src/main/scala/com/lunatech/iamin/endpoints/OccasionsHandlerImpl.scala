@@ -26,11 +26,10 @@ class OccasionsHandlerImpl[F[_] : Async](service: OccasionService[F], obs: IdObf
 
   override def getOccasions(respond: GetOccasionsResponse.type)(obfuscatedUserId: String, from: Option[FromLocalDate_Hack], to: Option[ToLocalDate_Hack]): F[GetOccasionsResponse] = {
     val userId = obs deobfuscate obfuscatedUserId
-
     service.list(
       userId,
       from.fold(LocalDate.MIN)(_.inner),
-      to.fold(LocalDate.MAX)(_.inner),
+      to.fold(LocalDate.MAX)(_.inner)
     ) map { occasion =>
       respond.Ok(OccasionsResponseJson(occasion.map(o => OccasionResponseJson(o.date, o.isPresent)).toIndexedSeq))
     }

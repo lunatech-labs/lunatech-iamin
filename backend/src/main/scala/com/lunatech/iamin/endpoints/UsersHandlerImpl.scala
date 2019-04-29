@@ -10,8 +10,11 @@ import io.scalaland.chimney.dsl._
 
 class UsersHandlerImpl[F[_] : Async](service: UserService[F], obs: IdObfuscator) extends UsersHandler[F] {
 
-  override def getUsers(respond: GetUsersResponse.type)(): F[GetUsersResponse] = {
-    service.list(0, 100) map { users =>
+  override def getUsers(respond: GetUsersResponse.type)(maybeObfuscatedOffsetId: Option[String] = None, maybeLimit: Option[Int] = Option(10)): F[GetUsersResponse] = {
+    val offsetId = maybeObfuscatedOffsetId map obs.deobfuscate getOrElse 0L
+    val limit = maybeLimit getOrElse 10
+
+    service.list(offsetId, limit) map { users =>
       UsersResponseJson(users.map(userIntoUserResponseJson).toIndexedSeq)
     } map {
       respond.Ok

@@ -11,7 +11,7 @@ import com.lunatech.iamin.endpoints.users.UsersResource
 import com.lunatech.iamin.endpoints.version.VersionResource
 import com.lunatech.iamin.endpoints.{OccasionsHandlerImpl, UsersHandlerImpl, VersionHandlerImpl}
 import com.lunatech.iamin.repository.{SlickOccasionRepository, SlickUserRepository}
-import com.lunatech.iamin.utils.{BuildInfo, HashidsIdObfuscator}
+import com.lunatech.iamin.utils.{Banner, BuildInfo, HashidsIdObfuscator}
 import fs2.Stream
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -51,6 +51,7 @@ object Main extends IOApp {
       val finalHttpApp = Logger(logHeaders = true, logBody = true)(httpApp)
 
       BlazeServerBuilder[F]
+        .withBanner(Banner.banner.split("\n").toList)
         .bindHttp(config.server.port, config.server.host)
         .withHttpApp(finalHttpApp)
         .serve

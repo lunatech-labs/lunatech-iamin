@@ -26,12 +26,9 @@ class SwaggerResource[F[_] : Sync](blockingEc: ExecutionContext)
       val file = "/" + path.toList.drop(swaggerUiPath.toList.size).mkString("/")
 
       (file match {
-        case "/index.html" =>
-          StaticFile.fromResource("/swagger-ui/index.html", blockingEc, req.some)
-        case "/api.yaml" =>
-          StaticFile.fromResource("/api.yaml", blockingEc, req.some)
-        case res =>
-          StaticFile.fromResource(swaggerUiResources + res, blockingEc, req.some)
+        case "/index.html" => StaticFile.fromResource("/swagger-ui/index.html", blockingEc, req.some)
+        case "/api.yaml"   => StaticFile.fromResource("/api.yaml", blockingEc, req.some)
+        case res           => StaticFile.fromResource(swaggerUiResources + res, blockingEc, req.some)
       }).getOrElseF(NotFound())
     }
   }

@@ -8,21 +8,21 @@ val ChimneyVersion = "0.3.1"
 val CirceVersion = "0.11.1"
 val DoobieVersion = "0.6.0"
 val HashidsVersion = "1.0.3"
-val Http4sVersion = "0.19.0"
+val Http4sVersion = "0.20.0"
 val LiquibaseVersion = "3.6.3"
 val LogbackVersion = "1.2.3"
 val OtjPgEmbeddedVersion = "0.13.1"
 val PostgresqlVersion = "42.2.5"
 val PureConfigVersion = "0.10.2"
 val ScalaCheckVersion = "1.14.0"
-val ScalaTestVersion = "3.0.5"
+val ScalaTestVersion = "3.0.7"
 val SlickPgVersion = "0.17.2"
 val SlickVersion = "3.3.0"
 val Specs2Version = "4.5.1"
 val SwaggerUiVersion = "3.22.0"
-val TypesafeConfigVersion = "1.3.3"
+val TypesafeConfigVersion = "1.3.4"
 val TypsafeLoggingVersion = "3.9.2"
-val WebjarsLocatorVersion = "0.34"
+val WebjarsLocatorVersion = "0.36"
 
 lazy val root = (project in file("."))
   .enablePlugins(JavaServerAppPackaging)
@@ -92,6 +92,8 @@ lazy val root = (project in file("."))
       )
     )
   )
+
+(compile in Compile) := ((compile in Compile) dependsOn dependencyUpdates).value
 
 lazy val generateSlickTables = taskKey[Try[Unit]]("Generate Slick code from Liquibase migrations")
 generateSlickTables := {

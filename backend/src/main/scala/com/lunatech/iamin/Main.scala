@@ -56,7 +56,7 @@ object Main extends IOApp {
           new VersionResource[F].routes(new VersionHandlerImpl[F](BuildInfo)) <+>
           new SwaggerResource[F](staticFileBlockingEc).routes()
         ).orNotFound
-      val finalHttpApp = Logger(logHeaders = true, logBody = true)(httpApp)
+      val finalHttpApp = Logger.httpApp(logHeaders = true, logBody = false)(httpApp)
 
       BlazeServerBuilder[F]
         .withBanner(Banner.banner.split("\n").toList)

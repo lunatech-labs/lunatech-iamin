@@ -8,6 +8,8 @@ import cats.implicits._
 import com.lunatech.iamin.database.Profile.api._
 import com.lunatech.iamin.database.tables.{OccasionsRow, Tables}
 import com.lunatech.iamin.domain.occasions.{CreateFailed, Occasion, OccasionRepository, UpdateFailed}
+import com.lunatech.iamin.domain.users.User
+import com.lunatech.iamin.endpoints.definitions.UserResponseJson
 import io.scalaland.chimney.dsl._
 import org.postgresql.util.PSQLException
 
@@ -17,7 +19,7 @@ class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends
 
   override def create(occasion: Occasion): F[Either[CreateFailed, Occasion]] = implicitly[LiftIO[F]].liftIO {
     tx {
-      Tables.Occasions += OccasionsRow(occasion.userId, occasion.date, occasion.isPresent)
+      Tables.Occasions += OccasionsRow(occasion.userId, occasion.date, None, occasion.isPresent)
     } redeem (
       {
         case e: PSQLException if e.getMessage contains "violates foreign key constraint" =>
@@ -32,7 +34,7 @@ class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends
   override def update(occasion: Occasion): F[Either[UpdateFailed, Occasion]] = implicitly[LiftIO[F]].liftIO {
     tx {
       Tables.Occasions
-        .filter(o => o.userId === occasion.userId.bind && o.date === occasion.date.bind)
+        .filter(o => o.userId === occasion.userId.bind && o.startDate === occasion.date.bind)
         .map(_.isPresent)
         .update(occasion.isPresent)
     } map { affectedRows =>
@@ -43,7 +45,7 @@ class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends
   override def delete(userId: Long, date: LocalDate): F[Option[Unit]] = implicitly[LiftIO[F]].liftIO {
     tx {
       Tables.Occasions
-        .filter(o => o.userId === userId.bind && o.date === date.bind)
+        .filter(o => o.userId === userId.bind && o.startDate === date.bind)
         .delete
     } map { affectedRows =>
       if (affectedRows eqv 1) ().some else none[Unit]
@@ -53,18 +55,24 @@ class SlickOccasionRepository[F[_] : Applicative : LiftIO](db: Database) extends
   override def get(userId: Long, date: LocalDate): F[Option[Occasion]] = implicitly[LiftIO[F]].liftIO {
     tx {
       Tables.Occasions
-        .filter(o => o.userId === userId.bind && o.date === date.bind)
+        .filter(o => o.userId === userId.bind && o.startDate === date.bind)
         .result
         .headOption
-    } map { _.map(_.transformInto[Occasion]) }
+    } map { _.map(occasionRowIntoOccasion) }
   }
 
   override def list(userId: Long, from: LocalDate, to: LocalDate): F[Seq[Occasion]] = implicitly[LiftIO[F]].liftIO {
     tx {
       Tables.Occasions
-        .filter { o => o.userId === userId.bind && o.date > from.bind && o.date < to.bind }
-        .sortBy(_.date)
+        .filter { o => o.userId === userId.bind && o.startDate > from.bind && o.startDate < to.bind }
+        .sortBy(_.startDate)
         .result
-    } map { _.map(_.transformInto[Occasion]) }
+    } map { _.map(occasionRowIntoOccasion) }
   }
+
+  @SuppressWarnings(Array("org.wartremover.warts.Any"))
+  private implicit def occasionRowIntoOccasion(user: OccasionsRow): Occasion =
+    user.into[Occasion]
+      .withFieldComputed(_.date, o => o.startDate)
+      .transform
 }

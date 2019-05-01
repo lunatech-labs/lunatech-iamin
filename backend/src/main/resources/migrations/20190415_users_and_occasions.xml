@@ -29,13 +29,14 @@
                         deleteCascade="true"
                 />
             </column>
-            <column name="date" type="date"/>
+            <column name="start_date" type="date"/>
+            <column name="end_date" type="date"/>
             <column name="is_present" type="boolean" defaultValueBoolean="true">
                 <constraints nullable="false"/>
             </column>
         </createTable>
 
-        <addPrimaryKey tableName="occasions" columnNames="user_id,date"/>
+        <addPrimaryKey tableName="occasions" columnNames="user_id,start_date"/>
 
     </changeSet>
 </databaseChangeLog>

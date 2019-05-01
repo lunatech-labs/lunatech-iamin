@@ -58,7 +58,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponseJson'
-  /users/{obfuscatedUserId}:
+  /users/{userId}:
     parameters:
       - $ref: '#/components/parameters/UserIdParam'
     get:
@@ -78,7 +78,7 @@ paths:
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: '#/components/schemas/ProblemResponseJson'
     patch:
       tags: [users]
       x-scala-package: users
@@ -103,7 +103,7 @@ paths:
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: '#/components/schemas/ProblemResponseJson'
     delete:
       tags: [users]
       x-scala-package: users
@@ -117,8 +117,8 @@ paths:
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
-  /users/{obfuscatedUserId}/occasions:
+                $ref: '#/components/schemas/ProblemResponseJson'
+  /users/{userId}/occasions:
     parameters:
       - $ref: '#/components/parameters/UserIdParam'
     get:
@@ -141,7 +141,7 @@ paths:
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: '#/components/schemas/ProblemResponseJson'
     post:
       tags: [occasions]
       x-scala-package: occasions
@@ -166,14 +166,14 @@ paths:
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: '#/components/schemas/ProblemResponseJson'
         409:
           description: Occasions date overlaps with already existing occasion
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
-  /users/{obfuscatedUserId}/occasions/{date}:
+                $ref: '#/components/schemas/ProblemResponseJson'
+  /users/{userId}/occasions/{date}:
     parameters:
       - $ref: '#/components/parameters/UserIdParam'
       - $ref: '#/components/parameters/DateParam'
@@ -194,7 +194,7 @@ paths:
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: '#/components/schemas/ProblemResponseJson'
     patch:
       tags: [occasions]
       x-scala-package: occasions
@@ -219,7 +219,7 @@ paths:
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: '#/components/schemas/ProblemResponseJson'
     delete:
       tags: [occasions]
       x-scala-package: occasions
@@ -233,11 +233,11 @@ paths:
           content:
             application/json+problem:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: '#/components/schemas/ProblemResponseJson'
 components:
   parameters:
     UserIdParam:
-      name: obfuscatedUserId
+      name: userId
       in: path
       description: Id of the specific user
       required: true
@@ -268,7 +268,7 @@ components:
         format: date
       x-scala-type: ToLocalDate_Hack # Manually implemented wrapper type to circumvent Guardrail double implicit value
     PaginationOffsetIdParam:
-      name: maybeObfuscatedOffsetId
+      name: userId
       in: query
       description: Offset id to start from
       schema:
@@ -293,27 +293,27 @@ components:
     PostUserRequestJson:
       type: object
       properties:
-        display_name:
+        displayName:
           type: string
       required:
-        - display_name
+        - displayName
     PatchUserRequestJson:
       type: object
       properties:
-        display_name:
+        displayName:
           type: string
       required:
-        - display_name
+        - displayName
     UserResponseJson:
       type: object
       properties:
         id:
           type: string
-        display_name:
+        displayName:
           type: string
       required:
         - id
-        - display_name
+        - displayName
     UsersResponseJson:
       type: object
       properties:
@@ -329,29 +329,29 @@ components:
         date:
           type: string
           format: date
-        is_present:
+        isPresent:
           type: boolean
       required:
         - date
-        - is_present
+        - isPresent
     PatchOccasionRequestJson:
       type: object
       properties:
-        is_present:
+        isPresent:
           type: boolean
       required:
-        - is_present
+        - isPresent
     OccasionResponseJson:
       type: object
       properties:
         date:
           type: string
           format: date
-        is_present:
+        isPresent:
           type: boolean
       required:
         - date
-        - is_present
+        - isPresent
     OccasionsResponseJson:
       type: object
       properties:
@@ -361,7 +361,7 @@ components:
             $ref: '#/components/schemas/OccasionResponseJson'
       required:
         - items
-    Problem:  # Modified from https://github.com/zalando/problem
+    ProblemResponseJson:  # Modified from https://github.com/zalando/problem
       type: object
       properties:
         title:

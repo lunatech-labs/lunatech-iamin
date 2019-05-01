@@ -1,5 +1,7 @@
 package com.lunatech.iamin
 
+import java.util.concurrent.Executors
+
 import cats.effect._
 import cats.implicits._
 import com.lunatech.iamin.config.Config
@@ -9,13 +11,15 @@ import com.lunatech.iamin.domain.users.UserService
 import com.lunatech.iamin.endpoints.occasions.OccasionsResource
 import com.lunatech.iamin.endpoints.users.UsersResource
 import com.lunatech.iamin.endpoints.version.VersionResource
-import com.lunatech.iamin.endpoints.{OccasionsHandlerImpl, UsersHandlerImpl, VersionHandlerImpl}
+import com.lunatech.iamin.endpoints.{OccasionsHandlerImpl, SwaggerResource, UsersHandlerImpl, VersionHandlerImpl}
 import com.lunatech.iamin.repository.{SlickOccasionRepository, SlickUserRepository}
 import com.lunatech.iamin.utils.{Banner, BuildInfo, HashidsIdObfuscator}
 import fs2.Stream
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
+
+import scala.concurrent.ExecutionContext
 
 @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Nothing"))
 object Main extends IOApp {
@@ -35,6 +39,9 @@ object Main extends IOApp {
   class Server(config: Config, db: com.lunatech.iamin.database.Profile.api.Database) {
     def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
+      val staticFileBlockingEc =
+        ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))  // TODO: Get from config
+
       val idObfuscator = new HashidsIdObfuscator(config.application.hashids)
 
       val occasionsRepository = new SlickOccasionRepository[F](db)
@@ -46,7 +53,8 @@ object Main extends IOApp {
       val httpApp = (
         new OccasionsResource[F].routes(new OccasionsHandlerImpl[F](occasionService, idObfuscator)) <+>
           new UsersResource[F].routes(new UsersHandlerImpl[F](userService, idObfuscator)) <+>
-          new VersionResource[F].routes(new VersionHandlerImpl[F](BuildInfo))
+          new VersionResource[F].routes(new VersionHandlerImpl[F](BuildInfo)) <+>
+          new SwaggerResource[F](staticFileBlockingEc).routes()
         ).orNotFound
       val finalHttpApp = Logger(logHeaders = true, logBody = true)(httpApp)
 

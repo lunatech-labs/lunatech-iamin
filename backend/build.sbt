@@ -19,8 +19,10 @@ val ScalaTestVersion = "3.0.5"
 val SlickPgVersion = "0.17.2"
 val SlickVersion = "3.3.0"
 val Specs2Version = "4.5.1"
+val SwaggerUiVersion = "3.22.0"
 val TypesafeConfigVersion = "1.3.3"
 val TypsafeLoggingVersion = "3.9.2"
+val WebjarsLocatorVersion = "0.34"
 
 lazy val root = (project in file("."))
   .enablePlugins(JavaServerAppPackaging)
@@ -65,6 +67,8 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "org.liquibase" % "liquibase-core" % LiquibaseVersion,
       "org.postgresql" % "postgresql" % PostgresqlVersion,
+      "org.webjars" % "swagger-ui" % SwaggerUiVersion,
+      "org.webjars" % "webjars-locator" % WebjarsLocatorVersion,
 
       "org.scalacheck" %% "scalacheck" % ScalaCheckVersion % Test,
       "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,

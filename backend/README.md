@@ -45,8 +45,11 @@ Requirements:
 run:
 
 ```
-sbt runMain com.lunatech.iamin.rest.Main
+sbt runMain com.lunatech.iamin.Main
 ```
+
+After that you can visit [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) to
+verify that everyting works and play around with the API. 
 
 
 ## Creating and managing API endpoints
@@ -120,7 +123,7 @@ Don't forget to commit the (newly) generated code to the Git repository and remo
 - [Chimney](https://scalalandio.github.io/chimney) data transformations
 - [Circe](https://circe.github.io/circe) json serialization
 - [Guardrail](https://github.com/twilio/guardrail) OpenAPI to Http4s code generator
-- [Hashids](https://github.com/10cella/hashids-java) user facing id obfuscation
+- [Hashids](https://hashids.org) user facing id obfuscation
 - [Http4s](https://http4s.org) web server
 - [Liquibase](https://www.liquibase.org) database migrations
 - [OpenAPI](https://swagger.io) service definition and documentation
@@ -130,4 +133,5 @@ Don't forget to commit the (newly) generated code to the Git repository and remo
 - [ScalaCheck](https://www.scalacheck.org) property testing
 - [ScalaTest]( http://www.scalatest.org) testing
 - [Slick](http://slick.lightbend.com) database access
+- [Swagger UI](https://swagger.io/tools/swagger-ui) api sandbox
 - [Wartremover](http://www.wartremover.org) code linting

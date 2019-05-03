@@ -39,8 +39,9 @@ object Main extends IOApp {
   class Server(config: Config, db: com.lunatech.iamin.database.Profile.api.Database) {
     def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
-      val staticFileBlockingEc =
-        ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))  // TODO: Get from config
+      val staticFileBlockingEc = ExecutionContext.fromExecutorService(
+        Executors.newFixedThreadPool(config.application.threadpools.blockingFileThreadpool.fixedSize)
+      )
 
       val idObfuscator = new HashidsIdObfuscator(config.application.hashids)
 

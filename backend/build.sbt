@@ -18,6 +18,7 @@ val ScalaTestVersion = "3.0.7"
 val SlickPgVersion = "0.17.2"
 val SlickVersion = "3.3.0"
 val SwaggerUiVersion = "3.22.0"
+val TypesafeConfigVersion = "1.3.4"
 val WebjarsLocatorVersion = "0.36"
 
 lazy val root = (project in file("."))
@@ -42,9 +43,10 @@ lazy val root = (project in file("."))
 
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-classic" % LogbackVersion,
-      "com.github.pureconfig" % "pureconfig_2.12" % PureConfigVersion,
+      "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
       "com.github.tminglei" %% "slick-pg" % SlickPgVersion,
       "com.opentable.components" % "otj-pg-embedded" % OtjPgEmbeddedVersion,
+      "com.typesafe" % "config" % TypesafeConfigVersion,
       "com.typesafe.slick" %% "slick" % SlickVersion,
       "com.typesafe.slick" %% "slick-codegen" % SlickVersion,
       "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,

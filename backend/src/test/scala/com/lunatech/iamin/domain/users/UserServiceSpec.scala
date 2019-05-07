@@ -1,99 +1,96 @@
 package com.lunatech.iamin.domain.users
 
-import cats.effect.IO
+import cats.Id
 import com.lunatech.iamin.repository.InMemoryUserRepository
 import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{FreeSpec, Matchers, OptionValues, ParallelTestExecution}
+import org.scalatest._
 
 class UserServiceSpec
   extends FreeSpec
     with GeneratorDrivenPropertyChecks
     with Matchers
     with OptionValues
+    with Inspectors
     with ParallelTestExecution {
 
-  private val repo = new InMemoryUserRepository[IO]()
-  private val service = new UserService[IO](repo)
+  private val repo = new InMemoryUserRepository[Id]()
+  private val service = new UserService[Id](repo)
 
   private val unknownIdGen = Gen.choose(1000000L, Long.MaxValue)
 
   "user service" - {
     "should list users" in {
       forAll { displayName: String =>
-        (for {
-          created <- service.create(displayName)
-          list <- service.list(0, Int.MaxValue)
-        } yield {
-          list should contain(created)
-        }).unsafeRunSync()
+
+        val created = service.create(displayName)
+        val list = service.list(0, Int.MaxValue)
+
+//        list should contain(created)  // Not working with cats.Id
+        list.exists(u => u.id == created.id && u.displayName == created.displayName) shouldBe true
       }
     }
 
     "should not be able to get unknown user" in {
       forAll(unknownIdGen) { unknownId =>
-        (for {
-          unknown <- service.get(unknownId).value
-        } yield {
-          unknown shouldBe None
-        }).unsafeRunSync()
+
+        val unknown = service.get(unknownId).value
+
+        unknown shouldBe None
       }
     }
 
     "should be able to add and get user" in {
       forAll { displayName: String =>
-        (for {
-          created <- service.create(displayName)
-          retrieved <- service.get(created.id).value
-        } yield {
-          created.displayName shouldBe displayName
-          retrieved.value.displayName shouldBe displayName
-        }).unsafeRunSync()
+
+        val created = service.create(displayName)
+        val retrieved = service.get(created.id).value
+
+        created.displayName shouldBe displayName
+        retrieved.value.displayName shouldBe displayName
       }
 
     }
 
     "should not be able to update unknown user" in {
       forAll(unknownIdGen, Gen.asciiStr) { case (unknownId: Long, displayName: String) =>
-        (for {
-          unknown <- service.update(unknownId, displayName).value
-        } yield {
-          unknown shouldBe None
-        }).unsafeRunSync()
+
+        val unknown = service.update(unknownId, displayName).value
+
+        unknown shouldBe None
       }
     }
 
     "should be able to update user" in {
       forAll { displayName: String =>
-        (for {
-          created <- service.create(displayName)
-          updated <- service.update(created.id, created.displayName.reverse).value
-        } yield {
-          updated.value.displayName shouldBe displayName.reverse
-        }).unsafeRunSync()
+
+        val created = service.create(displayName)
+        val updated = service.update(created.id, created.displayName.reverse).value
+
+        updated.value.displayName shouldBe displayName.reverse
+        updated.value.displayName shouldBe created.displayName.reverse
       }
     }
 
     "should not be able to delete unknown user" in {
       forAll(unknownIdGen) { unknownId: Long =>
-        (for {
-          unknown <- service.delete(unknownId).value
-        } yield {
-          unknown shouldBe None
-        }).unsafeRunSync()
+
+        val unknown = service.delete(unknownId).value
+
+        unknown shouldBe None
       }
     }
 
     "should be able to delete user" in {
       forAll { displayName: String =>
-        (for {
-          created <- service.create(displayName)
-          deleted <- service.delete(created.id).value
-          list <- service.list(0, 100)
-        } yield {
-          deleted shouldBe Some(())
-          list should not contain created
-        }).unsafeRunSync()
+
+        val created = service.create(displayName)
+        val deleted = service.delete(created.id).value
+        val list = service.list(0, 100)
+
+        deleted shouldBe Some(())
+//        list should not contain created // Not working with cats.Id
+        list.exists(u => u.id == created.id) shouldBe false
       }
     }
   }

@@ -23,7 +23,7 @@ class OccasionsHandlerImpl[F[_] : Async](service: OccasionService[F], obs: IdObf
           respond.NotFound(problemOf(Status.NotFound, s"User '$obfuscatedUserId' was not found"))
         case CreateFailed.DateAlreadyTaken =>
           respond.Conflict(
-            problemOf(Status.Conflict, s"Occasion with date '${body.date}' was not already taken")
+            problemOf(Status.Conflict, s"Occasion with date '${body.date}' was already taken")
           )
       },
       respond.Ok(_)

@@ -46,5 +46,5 @@ class InMemoryUserRepository[F[_] : Applicative] extends UserRepository[F] {
       .filter(_.id > offset)
       .sortBy(_.id)
       .take(limit)
-      .pure[F] // TODO: Add Pagination
+      .pure[F]
 }

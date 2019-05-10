@@ -10,8 +10,7 @@ import org.webjars.WebJarAssetLocator
 import scala.concurrent.ExecutionContext
 
 @SuppressWarnings(Array("org.wartremover.warts.Throw"))
-class SwaggerResource[F[_] : Sync](blockingEc: ExecutionContext)
-                                          (implicit val cs: ContextShift[F]) extends Http4sDsl[F] {
+class SwaggerResource[F[_] : Sync : ContextShift](blockingIOEc: ExecutionContext) extends Http4sDsl[F] {
 
   private val swaggerUiVersion =
     Option(new WebJarAssetLocator().getWebJars.get("swagger-ui"))
@@ -26,9 +25,9 @@ class SwaggerResource[F[_] : Sync](blockingEc: ExecutionContext)
       val file = "/" + path.toList.drop(swaggerUiPath.toList.size).mkString("/")
 
       (file match {
-        case "/index.html" => StaticFile.fromResource("/swagger-ui/index.html", blockingEc, req.some)
-        case "/api.yaml"   => StaticFile.fromResource("/api.yaml", blockingEc, req.some)
-        case res           => StaticFile.fromResource(swaggerUiResources + res, blockingEc, req.some)
+        case "/index.html" => StaticFile.fromResource("/swagger-ui/index.html", blockingIOEc, req.some)
+        case "/api.yaml"   => StaticFile.fromResource("/api.yaml", blockingIOEc, req.some)
+        case res           => StaticFile.fromResource(swaggerUiResources + res, blockingIOEc, req.some)
       }).getOrElseF(NotFound())
     }
   }

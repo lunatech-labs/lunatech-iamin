@@ -1,6 +1,7 @@
 package com.lunatech.iamin
 
-import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.{Executors, ThreadFactory}
 
 import cats.effect._
 import cats.implicits._
@@ -39,9 +40,15 @@ object Main extends IOApp {
   class Server(config: Config, db: com.lunatech.iamin.database.Profile.api.Database) {
     def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
-      val staticFileBlockingEc = ExecutionContext.fromExecutorService(
-        Executors.newFixedThreadPool(config.application.threadpools.blockingFileThreadpool.fixedSize)
-      )
+      val blockingIOEc = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(new ThreadFactory {
+        private[this] val counter = new AtomicLong(0L)
+        override def newThread(r: Runnable): Thread = {
+          val th = new Thread(r)
+          th.setName("blocking-io-thread-" + counter.getAndIncrement().toString)
+          th.setDaemon(true)
+          th
+        }
+      }))
 
       val idObfuscator = new HashidsIdObfuscator(config.application.hashids)
 
@@ -55,7 +62,7 @@ object Main extends IOApp {
         new OccasionsResource[F].routes(new OccasionsHandlerImpl[F](occasionService, idObfuscator)) <+>
           new UsersResource[F].routes(new UsersHandlerImpl[F](userService, idObfuscator)) <+>
           new VersionResource[F].routes(new VersionHandlerImpl[F](BuildInfo)) <+>
-          new SwaggerResource[F](staticFileBlockingEc).routes()
+          new SwaggerResource[F](blockingIOEc).routes()
         ).orNotFound
       val finalHttpApp = Logger.httpApp(logHeaders = true, logBody = false)(httpApp)
 

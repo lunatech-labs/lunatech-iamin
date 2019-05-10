@@ -11,11 +11,7 @@ package object config {
 
   final case class ServerConfig(host: String, port: Int)
 
-  final case class ApplicationConfig(hashids: HashidsConfig, threadpools: ThreadpoolsConfig)
-
-  final case class ThreadpoolsConfig(blockingFileThreadpool: FixedThreadpoolConfig)
-
-  final case class FixedThreadpoolConfig(fixedSize: Int)
+  final case class ApplicationConfig(hashids: HashidsConfig)
 
   final case class HashidsConfig(minLength: Int, secret: String)
 

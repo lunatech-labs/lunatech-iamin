@@ -70,8 +70,8 @@ sbt compile
 ```
 This will save the endpoint `Handler` stubs in the `src_managed` directory in the form a a Scala `trait` and a companion
 object.
-Put your implementation in `src/scala/com/lunatech/iamin/endpoints/{endpoint}/{endpoint}Handler`, take a look at what's
-already there as a reference.
+Put your implementation in `src/scala/com/lunatech/iamin/http/{endpoint}Endpoints.scala`, take a look at what's already
+there as a reference.
 
 If the endpoint you created is new, you also must add its routes to the server in `com.lunatech.iamin.Main`,
 again look at what's there for reference.
@@ -79,59 +79,34 @@ again look at what's there for reference.
 
 ## Managing database schema and generated code
 
-We use [Liquibase](https://www.liquibase.org) for database migrations and [Slick](http://slick.lightbend.com)'s code 
-generator for type safe queries.
+We use 
 
-Find the database migrations in `src/main/resources/migrations`, files are in Liquibase's
-[xml format](https://www.liquibase.org/documentation/xml_format.html).
+We use [Flyway](https://flywaydb.org/) for database migrations and [Doobie](https://github.com/tpolecat/doobie) for
+database access.
 
-To create a new migration, use the `createLiquibaseMigration` command:
+Find the database migrations in `src/main/resources/db/migration`, files are in SQL format.
 
-```
-sbt createLiquibaseMigration "short description"
-```
-
-This will put a new migration file in the migrations directory for you to implement.
-
-Please use the naming convention of the files: `yyyyMMdd_short_description.xml` since Liquibase will apply the all the 
+Please use the naming convention of the files: `Vx__short_description.sql` since Flyway will apply the all the
 migrations in the directory in ascending order.
 
 > Never change an existing migration once it has been applied to the database! If you need to change something just add
 a new migration.
 
-Since migrations are are timestamped by date it is possible to have collisions if two migrations that depend on each
-other are created on the same day. This is rare and how to deal with that is left an exercise for the reader.
-
-Once you added you migration, run the `generateSlickTables` command:
-
-```
-sbt generateSlickTables
-```
-This sbt task will:
-
-1. Create a temporary Postgresql database
-2. Apply all Liquibase migrations to that database
-3. Generate database access objects using Slick codegen
-4. Save the generated code to `com.lunatech.iamin.database.tables`
-5. Destroy the temporary database
-
-Don't forget to commit the (newly) generated code to the Git repository and remove any unused generated code.
-
-
 ## Stack
 
-- [Chimney](https://scalalandio.github.io/chimney) data transformations
-- [Circe](https://circe.github.io/circe) json serialization
-- [Guardrail](https://github.com/twilio/guardrail) OpenAPI to Http4s code generator
+- [Chimney](https://scalalandio.github.io/chimney/) data transformations
+- [Circe](https://circe.github.io/circe/) json serialization
+- [Doobie](https://github.com/tpolecat/doobie) database access
+- [Flyway](https://flywaydb.org) database migrations
+- [Guardrail](https://github.com/twilio/guardrail/) OpenAPI to Http4s code generator
 - [Hashids](https://hashids.org) user facing id obfuscation
 - [Http4s](https://http4s.org) web server
-- [Liquibase](https://www.liquibase.org) database migrations
 - [OpenAPI](https://swagger.io) service definition and documentation
 - [PostgreSQL](https://www.postgresql.org) database
 - [PureConfig](https://pureconfig.github.io) Configuration parsing
 - [Scala](https://www.scala-lang.org) language
 - [ScalaCheck](https://www.scalacheck.org) property testing
 - [ScalaTest]( http://www.scalatest.org) testing
-- [Slick](http://slick.lightbend.com) database access
-- [Swagger UI](https://swagger.io/tools/swagger-ui) api sandbox
+- [Swagger UI](https://swagger.io/tools/swagger-ui/) api sandbox
 - [Wartremover](http://www.wartremover.org) code linting
+- [ZIO](https://scalaz.github.io/scalaz-zio/) Runtime system

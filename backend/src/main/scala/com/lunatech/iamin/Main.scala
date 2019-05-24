@@ -1,77 +1,70 @@
 package com.lunatech.iamin
 
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{Executors, ThreadFactory}
-
-import cats.effect._
-import cats.implicits._
-import com.lunatech.iamin.config.Config
-import com.lunatech.iamin.database.Database
-import com.lunatech.iamin.domain.occasions.OccasionService
-import com.lunatech.iamin.domain.users.UserService
-import com.lunatech.iamin.endpoints.occasions.OccasionsResource
-import com.lunatech.iamin.endpoints.users.UsersResource
-import com.lunatech.iamin.endpoints.version.VersionResource
-import com.lunatech.iamin.endpoints.{OccasionsHandlerImpl, SwaggerResource, UsersHandlerImpl, VersionHandlerImpl}
-import com.lunatech.iamin.repository.{SlickOccasionRepository, SlickUserRepository}
-import com.lunatech.iamin.utils.{Banner, BuildInfo, HashidsIdObfuscator}
-import fs2.Stream
+import cats.effect.ExitCode
+import cats.syntax.semigroupk._
+import com.lunatech.iamin.config.{Config, HashidsConfig}
+import com.lunatech.iamin.core.idcodec.service.{HashidsIdCodec, IdCodec}
+import com.lunatech.iamin.core.occasion.repository.{DoobieOccasionRepository, OccasionRepository}
+import com.lunatech.iamin.core.user.repository.{DoobieUserRepository, UserRepository}
+import com.lunatech.iamin.http.{OccasionEndpoints, SwaggerEndpoints, UserEndpoints, VersionEndpoints}
+import com.lunatech.iamin.utils.{Banner, Database, PrettyPrinter}
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
-import org.http4s.server.middleware.Logger
+import scalaz.zio.blocking.Blocking
+import scalaz.zio.clock.Clock
+import scalaz.zio.console.{Console, putStrLn}
+import scalaz.zio.interop.catz._
+import scalaz.zio.scheduler.Scheduler
+import scalaz.zio.{App, Task, TaskR, ZIO}
 
-import scala.concurrent.ExecutionContext
+object Main extends App with PrettyPrinter {
 
-@SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Nothing"))
-object Main extends IOApp {
+  override def run(args: List[String]): ZIO[Environment, Nothing, Int] = {
 
-  override def run(args: List[String]): IO[ExitCode] = {
+    type AppEnvironment = Clock with Console with Blocking with UserRepository with OccasionRepository with IdCodec
+    type AppTask[A] = TaskR[AppEnvironment, A]
 
-    val server = for {
-      config <- Resource.liftF(Config.load())
-      db <- Database.create(config.database)
-      _ <- Resource.liftF(Database.migrate(db.source.createConnection))
-      server = new Server(config, db)
-    } yield server
+    val program = for {
+      config      <- ZIO.fromEither(Config.load)
+      _           <- putStrLn(s"Loaded configuration: ${prettyPrint(config)}")
+      _           <- Database.runMigrations(config.database)
+      blockingEc  <- ZIO.environment[Blocking].flatMap(_.blocking.blockingExecutor).map(_.asEC)
+      connectEc    = Platform.executor.asEC
+      transactorR  = Database.mkTransactor(config.database, connectEc, blockingEc)
+      httpApp      = (
+        new OccasionEndpoints[AppEnvironment]().routes <+>
+        new SwaggerEndpoints[AppEnvironment](blockingEc).routes <+>
+        new UserEndpoints[AppEnvironment]().routes <+>
+        new VersionEndpoints[AppEnvironment]().routes
+      ).orNotFound
+      server       = ZIO.runtime[AppEnvironment].flatMap { implicit rts =>
+        BlazeServerBuilder[AppTask]
+          .withBanner(Banner.banner.split("\n").toList)
+          .bindHttp(config.server.port, config.server.host)
+          .withHttpApp(httpApp)
+          .serve
+          .compile[AppTask, AppTask, ExitCode]
+          .drain
+      }
+      program     <- transactorR.use { transactor =>
+        server.provideSome[Environment] { base =>
+          new Clock with Console with Blocking with DoobieUserRepository with DoobieOccasionRepository with HashidsIdCodec {
+            override val clock: Clock.Service[Any] = base.clock
+            override val console: Console.Service[Any] = base.console
+            override val blocking: Blocking.Service[Any] = base.blocking
+            override val scheduler: Scheduler.Service[Any] = base.scheduler
 
-    server.use(_.stream[IO].compile.drain.as(ExitCode.Success))
-  }
+            override protected def xa: doobie.Transactor[Task] = transactor
 
-  class Server(config: Config, db: com.lunatech.iamin.database.Profile.api.Database) {
-    def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
-
-      val blockingIOEc = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(new ThreadFactory {
-        private[this] val counter = new AtomicLong(0L)
-        override def newThread(r: Runnable): Thread = {
-          val th = new Thread(r)
-          th.setName("blocking-io-thread-" + counter.getAndIncrement().toString)
-          th.setDaemon(true)
-          th
+            override protected def hashidsConfig: HashidsConfig = config.application.hashids
+          }
         }
-      }))
+      }
+    } yield program
 
-      val idObfuscator = new HashidsIdObfuscator(config.application.hashids)
-
-      val occasionsRepository = new SlickOccasionRepository[F](db)
-      val occasionService = new OccasionService[F](occasionsRepository)
-
-      val userRepository = new SlickUserRepository[F](db)
-      val userService = new UserService[F](userRepository)
-
-      val httpApp = (
-        new OccasionsResource[F].routes(new OccasionsHandlerImpl[F](occasionService, idObfuscator)) <+>
-          new UsersResource[F].routes(new UsersHandlerImpl[F](userService, idObfuscator)) <+>
-          new VersionResource[F].routes(new VersionHandlerImpl[F](BuildInfo)) <+>
-          new SwaggerResource[F](blockingIOEc).routes()
-        ).orNotFound
-      val finalHttpApp = Logger.httpApp(logHeaders = true, logBody = false)(httpApp)
-
-      BlazeServerBuilder[F]
-        .withBanner(Banner.banner.split("\n").toList)
-        .bindHttp(config.server.port, config.server.host)
-        .withHttpApp(finalHttpApp)
-        .serve
-        .drain
-    }
+    program.foldM(
+      e => putStrLn(s"Execution failed with error $e") *> ZIO.succeed(1),
+      _ => ZIO.succeed(0)
+    )
   }
 }

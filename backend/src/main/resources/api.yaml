@@ -30,7 +30,7 @@ paths:
       operationId: getUsers
       summary: Retrieve a list of all users
       parameters:
-        - $ref: '#/components/parameters/PaginationOffsetIdParam'
+        - $ref: '#/components/parameters/PaginationOffsetParam'
         - $ref: '#/components/parameters/PaginationLimitParam'
       responses:
         200:
@@ -258,7 +258,7 @@ components:
       schema:
         type: string
         format: date
-      x-scala-type: FromLocalDate_Hack # Manually implemented wrapper type to circumvent Guardrail double implicit value
+      x-scala-type: FromLocalDate_Hack # TODO: Remove once upstream fixes https://github.com/twilio/guardrail/issues/290
     ToLocalDateParam:
       name: to
       in: query
@@ -266,9 +266,9 @@ components:
       schema:
         type: string
         format: date
-      x-scala-type: ToLocalDate_Hack # Manually implemented wrapper type to circumvent Guardrail double implicit value
-    PaginationOffsetIdParam:
-      name: userId
+      x-scala-type: ToLocalDate_Hack # TODO: Remove once upstream fixes https://github.com/twilio/guardrail/issues/290
+    PaginationOffsetParam:
+      name: offset
       in: query
       description: Offset id to start from
       schema:
@@ -293,27 +293,27 @@ components:
     PostUserRequestJson:
       type: object
       properties:
-        displayName:
+        name:
           type: string
       required:
-        - displayName
+        - name
     PatchUserRequestJson:
       type: object
       properties:
-        displayName:
+        name:
           type: string
       required:
-        - displayName
+        - name
     UserResponseJson:
       type: object
       properties:
         id:
           type: string
-        displayName:
+        name:
           type: string
       required:
         - id
-        - displayName
+        - name
     UsersResponseJson:
       type: object
       properties:
@@ -321,6 +321,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserResponseJson'
+        nextOffset:
+          type: string
       required:
         - items
     PostOccasionRequestJson:
@@ -390,3 +392,10 @@ components:
         - title
         - status
         - detail
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []

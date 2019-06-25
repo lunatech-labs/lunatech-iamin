@@ -109,4 +109,4 @@ a new migration.
 - [ScalaTest]( http://www.scalatest.org) testing
 - [Swagger UI](https://swagger.io/tools/swagger-ui/) api sandbox
 - [Wartremover](http://www.wartremover.org) code linting
-- [ZIO](https://scalaz.github.io/scalaz-zio/) Runtime system
+- [ZIO](https://zio.dev) Runtime system

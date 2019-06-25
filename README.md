@@ -5,6 +5,14 @@ The goal of this project is to solve the problem of overflooding team calendars 
 
 This project is meant for tracking this information.
 
+## Backend
+
+Please look at the [dedicated README](https://github.com/lunatech-labs/lunatech-iamin/tree/master/backend) inside the backend folder.
+
+## Frontend
+
+TODO: add a readme.
+
 ## List of sections to have in the README
 
 - [x] A project's abstract 

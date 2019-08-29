@@ -1,7 +1,6 @@
 enablePlugins(ScalaJSPlugin)
 
-name := "Scala.js Tutorial"
-scalaVersion := "2.12.8" // or any other Scala version >= 2.10.2
+name := "iamin"
+scalaVersion := "2.12.8"
 
-// This is an application with a main method
 scalaJSUseMainModuleInitializer := true

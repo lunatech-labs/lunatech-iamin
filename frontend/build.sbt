@@ -3,7 +3,12 @@ enablePlugins(ScalaJSPlugin)
 name := "iamin"
 scalaVersion := "2.12.8"
 
-libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "1.4.0"
+libraryDependencies ++= Seq(
+  "com.github.japgolly.scalajs-react" %%% "core" % "1.4.0",
+  "com.github.japgolly.scalajs-react" %%% "extra" % "1.4.0",
+  "com.github.japgolly.scalajs-react" %%% "test" % "1.4.0",
+  "org.scala-js" %%% "scalajs-dom" % "0.9.7"
+)
 
 scalaJSUseMainModuleInitializer := true
 

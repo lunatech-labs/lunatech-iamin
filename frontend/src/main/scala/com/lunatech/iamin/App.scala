@@ -1,14 +1,29 @@
-package com.lunatech.iamin
-
+import scala.scalajs.js.JSApp
 import scala.scalajs.js.annotation.JSExport
-import org.scalajs.dom.document
+import org.scalajs.dom
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
 
-object App {
+case class AppState(user: String)
 
-  val NoArgs = ScalaComponent.static("No args")(<.div("Hello!"))
+object IaminApp {
 
-  def main(args: Array[String]): Unit = NoArgs().renderIntoDOM(document.getElementById("mount"))
+  val component = ScalaComponent.builder[Unit]("Iamin")
+    .initialState(AppState("toto"))
+    .renderBackend[AppBackend]
+    .build
 
+  class AppBackend($: BackendScope[Unit, AppState]) {
+
+    def render(s: AppState) = <.div(<.p(s.user))
+
+  }
+}
+
+object App extends JSApp {
+
+  @JSExport
+  override def main(): Unit = {
+    IaminApp.component().renderIntoDOM(dom.document.getElementById("mount"))
+  }
 }

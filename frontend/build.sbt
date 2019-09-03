@@ -1,4 +1,5 @@
 enablePlugins(ScalaJSPlugin)
+enablePlugins(JSDependenciesPlugin)
 
 name := "iamin"
 scalaVersion := "2.12.8"
@@ -12,20 +13,20 @@ libraryDependencies ++= Seq(
 
 scalaJSUseMainModuleInitializer := true
 
+skip in packageJSDependencies := false
+
+jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
 
 jsDependencies ++= Seq(
-
   "org.webjars.npm" % "react" % "16.7.0"
     /        "umd/react.development.js"
     minified "umd/react.production.min.js"
     commonJSName "React",
-
   "org.webjars.npm" % "react-dom" % "16.7.0"
     /         "umd/react-dom.development.js"
     minified  "umd/react-dom.production.min.js"
     dependsOn "umd/react.development.js"
     commonJSName "ReactDOM",
-
   "org.webjars.npm" % "react-dom" % "16.7.0"
     /         "umd/react-dom-server.browser.development.js"
     minified  "umd/react-dom-server.browser.production.min.js"

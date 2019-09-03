@@ -1,5 +1,4 @@
-import scala.scalajs.js.JSApp
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js
 import org.scalajs.dom
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
@@ -20,9 +19,8 @@ object IaminApp {
   }
 }
 
-object App extends JSApp {
+object App extends js.JSApp {
 
-  @JSExport
   override def main(): Unit = {
     IaminApp.component().renderIntoDOM(dom.document.getElementById("mount"))
   }

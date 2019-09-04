@@ -10,12 +10,14 @@ import com.lunatech.iamin.http.{OccasionEndpoints, SwaggerEndpoints, UserEndpoin
 import com.lunatech.iamin.utils.{Banner, Database, PrettyPrinter}
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.server.middleware.{CORS, CORSConfig}
 import scalaz.zio.blocking.Blocking
 import scalaz.zio.clock.Clock
 import scalaz.zio.console.{Console, putStrLn}
 import scalaz.zio.interop.catz._
 import scalaz.zio.scheduler.Scheduler
 import scalaz.zio.{App, Task, TaskR, ZIO}
+import scala.concurrent.duration._
 
 object Main extends App with PrettyPrinter {
 
@@ -24,6 +26,14 @@ object Main extends App with PrettyPrinter {
     type AppEnvironment = Clock with Console with Blocking with UserRepository with OccasionRepository with IdCodec
     type AppTask[A] = TaskR[AppEnvironment, A]
 
+    val corsConfig = CORSConfig(
+      anyOrigin = true,
+      anyMethod = false,
+      allowedOrigins = Set("localhost", "localhost:5000"),
+      allowedMethods = Some(Set("GET", "POST")),
+      allowCredentials = true,
+      maxAge = 1.day.toSeconds)
+
     val program = for {
       config      <- ZIO.fromEither(Config.load)
       _           <- putStrLn(s"Loaded configuration: ${prettyPrint(config)}")
@@ -31,11 +41,11 @@ object Main extends App with PrettyPrinter {
       blockingEc  <- ZIO.environment[Blocking].flatMap(_.blocking.blockingExecutor).map(_.asEC)
       connectEc    = Platform.executor.asEC
       transactorR  = Database.mkTransactor(config.database, connectEc, blockingEc)
-      httpApp      = (
+      httpApp      = CORS(
         new OccasionEndpoints[AppEnvironment]().routes <+>
         new SwaggerEndpoints[AppEnvironment](blockingEc).routes <+>
         new UserEndpoints[AppEnvironment]().routes <+>
-        new VersionEndpoints[AppEnvironment]().routes
+        new VersionEndpoints[AppEnvironment]().routes, corsConfig
       ).orNotFound
       server       = ZIO.runtime[AppEnvironment].flatMap { implicit rts =>
         BlazeServerBuilder[AppTask]

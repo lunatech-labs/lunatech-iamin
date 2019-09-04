@@ -11,20 +11,24 @@ object IaminApp {
   case class AppState(user: String)
 
   val component = ScalaComponent.builder[Unit]("Iamin")
-    .initialState(AppState("tata"))
+    .initialState(AppState(""))
     .renderBackend[AppBackend]
     .build
 
   class AppBackend($: BackendScope[Unit, AppState]) {
 
     def updateUser() = Callback.future {
-      val userId = "7MAEm82r1g0XNZRo"
+      val userId = "BVmN9k2xkg3R0XOL"
       IaminAPI.fetchUser(userId) map { user => $.setState(AppState(user.name))}
     }
 
     def render(s: AppState) = {
-      updateUser().logResult.runNow()
-      <.div(<.p(s.user))
+      <.div(
+        <.button(^.`type` := "button", ^.cls := "btn btn-primary custom-button-width",
+                ^.onClick --> updateUser,
+                "Get user"
+        ),
+        <.p(s.user))
     }
   }
 }

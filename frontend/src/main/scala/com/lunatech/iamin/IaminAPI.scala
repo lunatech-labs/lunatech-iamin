@@ -9,7 +9,10 @@ import scala.scalajs.js.{JSON, URIUtils}
 object IaminAPI {
 
   def fetchUser(id: String): Future[User] = {
-    Ajax.get(userEndpoint(id)) map { xhr =>
+    Ajax.get(
+      userEndpoint(id),
+      headers = Map("Content-Type" -> "application/json")
+    ).map { xhr =>
       JSON.parse(xhr.responseText).asInstanceOf[User]
     }
   }

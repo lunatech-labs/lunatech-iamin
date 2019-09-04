@@ -8,14 +8,24 @@ import scala.scalajs.js.{JSON, URIUtils}
 
 object IaminAPI {
 
-  def fetchUser(id: String): Future[User] = {
+  val usersEndpoint = "http://localhost:8080/users"
+
+  def getUser(id: String): Future[User] = {
     Ajax.get(
-      userEndpoint(id),
+      s"$usersEndpoint/$id",
       headers = Map("Content-Type" -> "application/json")
     ).map { xhr =>
       JSON.parse(xhr.responseText).asInstanceOf[User]
     }
   }
 
-  def userEndpoint(id: String) = s"http://localhost:8080/users/$id"
+  def postUser(name: String): Future[User] = {
+    Ajax.post(
+      usersEndpoint,
+      headers = Map("Content-Type" -> "application/json"),
+      data = s"""{\"name\":\"$name\"}"""
+    ).map { xhr =>
+      JSON.parse(xhr.responseText).asInstanceOf[User]
+    }
+  }
 }

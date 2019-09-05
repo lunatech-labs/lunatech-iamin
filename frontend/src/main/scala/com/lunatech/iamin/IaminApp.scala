@@ -19,11 +19,19 @@ object IaminApp {
 
     def onChange(e: ReactEventFromInput) = {
       val newValue = e.target.value
+      println(newValue)
       $.modState(_.copy(user = newValue))
     }
 
+    def handleSubmit(e: ReactEventFromInput) = {
+      e.preventDefaultCB >> postUser(e.target.value)
+    }
+
     def postUser(name: String) = Callback.future {
-      IaminAPI.postUser(name) map { user => $.setState(AppState(user.name))}
+      println(name)
+      IaminAPI.postUser(name).map { user =>
+        $.setState(AppState(user.name))
+      }
     }
 
     def render(state: AppState) =
@@ -33,36 +41,5 @@ object IaminApp {
           <.button("Create")
         )
       )
-
-
-    // private val userInputState = $.zoomState(_.user)(value => _.copy(user = value))
-
-    // def updateUser(event: ReactEvent): Callback = {
-    //   userInputState.setState(event.target.nodeValue)
-    // }
-
-    // def getUser() = Callback.future {
-    //   val userId = "BVmN9k2xkg3R0XOL"
-    //   IaminAPI.getUser(userId).map {
-    //     user => $.setState(AppState(user.name))
-    //   }
-    // }
-
-    // def render(s: AppState) = {
-    //   <.div(
-    //     <.div(
-    //       <.input(^.`type` := "text", ^.cls := "form-control",
-    //             ^.value := "", ^.onChange ==> updateUser
-    //           )
-    //         ),
-    //         <.div(^.cls := "col-xs-2",
-    //           <.button(^.`type` := "button", ^.cls := "btn btn-primary custom-button-width",
-    //             ^.onClick --> postUser(s.user),
-    //             "Create"
-    //           )
-    //         ),
-    //     <.p(s.user))
-    // }
-
   }
 }

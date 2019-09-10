@@ -18,16 +18,17 @@ object IaminApp {
 
   class AppBackend($: BackendScope[Unit, AppState]) {
 
-    def onChange(e: ReactEventFromInput) = {
+    def onChange(e: ReactEventFromInput): Callback = {
       val newValue = e.target.value
       println(newValue)
       $.modState(_.copy(user = newValue))
     }
 
-    def handleSubmit(e: ReactEventFromInput) = {
-      e.preventDefaultCB >>
-      $.modState(s => AppState(s.items :+ s.user, ""))
-    }
+    def postUser(name: String): Future[User] = IaminAPI.postUser(name)
+
+    def handleSubmit(event: ReactEventFromInput): Callback =
+      event.preventDefaultCB >>
+        $.modState(state => AppState(state.items :+ state.user, ""))
 
     def createItem(itemText: String) = <.li(itemText)
 
@@ -43,7 +44,6 @@ object IaminApp {
 
   val UserList = ScalaFnComponent[List[String]]{ props =>
     def createItem(itemText: String) = <.li(itemText)
-    println(props.sorted)
     <.ul(props.sorted map createItem: _*)
   }
 

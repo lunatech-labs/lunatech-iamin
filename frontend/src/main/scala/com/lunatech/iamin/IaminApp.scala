@@ -8,10 +8,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object IaminApp {
 
-  case class AppState(user: String)
+  case class AppState(items: List[String], user: String)
 
-  val component = ScalaComponent.builder[Unit]("Iamin")
-    .initialState(AppState(""))
+  val component = ScalaComponent
+    .builder[Unit]("Iamin")
+    .initialState(AppState(Nil, ""))
     .renderBackend[AppBackend]
     .build
 
@@ -24,22 +25,26 @@ object IaminApp {
     }
 
     def handleSubmit(e: ReactEventFromInput) = {
-      e.preventDefaultCB >> postUser(e.target.value)
+      e.preventDefaultCB >>
+      $.modState(s => AppState(s.items :+ s.user, ""))
     }
 
-    def postUser(name: String) = Callback.future {
-      println(name)
-      IaminAPI.postUser(name).map { user =>
-        $.setState(AppState(user.name))
-      }
-    }
+    def createItem(itemText: String) = <.li(itemText)
 
     def render(state: AppState) =
       <.div(
-        <.form(^.onSubmit --> postUser(state.user),
+        <.form(^.onSubmit ==> handleSubmit,
           <.input(^.onChange ==> onChange, ^.value := state.user),
           <.button("Create")
-        )
+        ),
+        UserList(state.items)
       )
   }
+
+  val UserList = ScalaFnComponent[List[String]]{ props =>
+    def createItem(itemText: String) = <.li(itemText)
+    println(props.sorted)
+    <.ul(props.sorted map createItem: _*)
+  }
+
 }

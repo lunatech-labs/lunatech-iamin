@@ -22,15 +22,19 @@ object IaminApp {
 
     def onChange(e: ReactEventFromInput): Callback = {
       val newValue = e.target.value
-      println(newValue)
       $.modState(_.copy(user = newValue))
     }
 
     def postUser(name: String): Future[User] = IaminAPI.postUser(name)
 
-    def handleSubmit(event: ReactEventFromInput): Callback =
-      event.preventDefaultCB >>
-        $.modState(state => AppState(state.items :+ state.user, ""))
+    def handleSubmit(event: ReactEventFromInput): Callback = {
+      event.preventDefaultCB >> {
+        $.modState(state => {
+          postUser(state.user)
+          AppState(state.items :+ state.user, "")
+        })
+      }
+    }
 
     def createItem(itemText: String): VdomTagOf[LI] = <.li(itemText)
 

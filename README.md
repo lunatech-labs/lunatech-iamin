@@ -28,6 +28,6 @@ TODO: add a readme.
 
 # Development Setup
 
-In repository root: docker compose up
-In backend: sbt run
+In repository root: docker compose up  
+In backend: sbt run  
 In frontend: yarn global add serve, sbt compile, sbt fastOptJS, serve

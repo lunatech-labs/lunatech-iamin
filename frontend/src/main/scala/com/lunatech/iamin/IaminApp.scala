@@ -1,16 +1,18 @@
 package com.lunatech.iamin
 
-import japgolly.scalajs.react._
+import japgolly.scalajs.react.component.Scala
+import japgolly.scalajs.react.component.ScalaFn.Component
 import japgolly.scalajs.react.vdom.html_<^._
+import japgolly.scalajs.react.{CtorType, _}
+import org.scalajs.dom.html.{Div, LI}
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object IaminApp {
 
   case class AppState(items: List[String], user: String)
 
-  val component = ScalaComponent
+  val component: Scala.Component[Unit, AppState, AppBackend, CtorType.Nullary] = ScalaComponent
     .builder[Unit]("Iamin")
     .initialState(AppState(Nil, ""))
     .renderBackend[AppBackend]
@@ -30,9 +32,9 @@ object IaminApp {
       event.preventDefaultCB >>
         $.modState(state => AppState(state.items :+ state.user, ""))
 
-    def createItem(itemText: String) = <.li(itemText)
+    def createItem(itemText: String): VdomTagOf[LI] = <.li(itemText)
 
-    def render(state: AppState) =
+    def render(state: AppState): VdomTagOf[Div] =
       <.div(
         <.form(^.onSubmit ==> handleSubmit,
           <.input(^.onChange ==> onChange, ^.value := state.user),
@@ -42,8 +44,9 @@ object IaminApp {
       )
   }
 
-  val UserList = ScalaFnComponent[List[String]]{ props =>
+  val UserList: Component[List[String], CtorType.Props] = ScalaFnComponent[List[String]] { props =>
     def createItem(itemText: String) = <.li(itemText)
+
     <.ul(props.sorted map createItem: _*)
   }
 

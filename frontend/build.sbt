@@ -36,3 +36,5 @@ jsDependencies ++= Seq(
     commonJSName "ReactDOMServer")
 
 dependencyOverrides += "org.webjars.npm" % "js-tokens" % Versions.jsTokens
+
+ensimeScalaVersion in ThisBuild := "2.12.8"

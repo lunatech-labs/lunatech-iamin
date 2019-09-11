@@ -9,7 +9,8 @@ libraryDependencies ++= Seq(
   "com.github.japgolly.scalajs-react" %%% "core" % Versions.scalajsReact,
   "com.github.japgolly.scalajs-react" %%% "extra" % Versions.scalajsReact,
   "com.github.japgolly.scalajs-react" %%% "test" % Versions.scalajsReact,
-  "io.suzaku" %%% "diode" % Versions.diode
+  "io.suzaku" %%% "diode" % Versions.diode,
+  "io.suzaku" %%% "diode-react" % Versions.diodeReact
 )
 
 scalaJSUseMainModuleInitializer := true

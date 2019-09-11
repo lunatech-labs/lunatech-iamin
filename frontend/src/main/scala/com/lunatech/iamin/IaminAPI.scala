@@ -4,7 +4,7 @@ import org.scalajs.dom.ext.Ajax
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.scalajs.js.{JSON, URIUtils}
+import scala.scalajs.js.JSON
 
 object IaminAPI {
 

@@ -25,3 +25,9 @@ TODO: add a readme.
 - [ ] Explain how to use the application - screenshots are welcomed
 - [ ] Explain how to configure the application and all the configuration options
 - [ ] If there is too much documentation for one file, the README.md should point the user to the relevant separate document. For example, in the README they can be a link to the architecture section.
+
+# Development Setup
+
+In repository root: docker compose up
+In backend: sbt run
+In frontend: yarn global add serve, sbt compile, sbt fastOptJS, serve

@@ -5,3 +5,5 @@ target/
 .cache
 dist/
 node_modules/
+.ensime
+.ensime_cache/

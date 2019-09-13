@@ -10,7 +10,7 @@ libraryDependencies ++= Seq(
   "com.github.japgolly.scalajs-react" %%% "extra" % Versions.scalajsReact,
   "com.github.japgolly.scalajs-react" %%% "test" % Versions.scalajsReact,
   "io.suzaku" %%% "diode" % Versions.diode,
-  "io.suzaku" %%% "diode-react" % Versions.diode,
+  "io.suzaku" %%% "diode-react" % Versions.diodeReact,
   "io.suzaku" %%% "boopickle" % "1.2.6",
   "com.github.japgolly.scalacss" %%% "ext-react" % "0.5.3",
   "com.lihaoyi" %%% "autowire" % "0.2.6",

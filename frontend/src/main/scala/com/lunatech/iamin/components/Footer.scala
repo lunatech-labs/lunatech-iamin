@@ -15,5 +15,11 @@ object Footer {
     )
     .build
 
+  val component1 = ScalaComponent.builder
+    .static("Footer")(
+      <.footer()
+    )
+    .build
+
   def apply() = component()
 }

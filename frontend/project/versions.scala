@@ -1,7 +1,8 @@
 object Versions {
   val scalajsDom = "0.9.3"
   val scalajsReact = "1.4.0"
-  val diode = "1.1.2"
+  val diode = "1.1.5"
+  val diodeReact = "1.1.5.142"
   val react = "16.7.0"
   val jsTokens = "3.0.2"
 

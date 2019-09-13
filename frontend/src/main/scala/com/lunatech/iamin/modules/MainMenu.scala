@@ -12,7 +12,7 @@ import japgolly.scalajs.react.vdom.html_<^._
 import scalacss.ScalaCssReact._
 
 object MainMenu {
-  // shorthand for styles
+
   @inline private def bss = GlobalStyles.bootstrapStyles
 
   case class Props(router: RouterCtl[Loc], currentLoc: Loc, proxy: ModelProxy[Option[Int]])

@@ -16,4 +16,4 @@ object Footer {
     .build
 
   def apply() = component()
-}git c
+}

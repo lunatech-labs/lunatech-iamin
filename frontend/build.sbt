@@ -1,5 +1,7 @@
 enablePlugins(ScalaJSPlugin)
 enablePlugins(JSDependenciesPlugin)
+enablePlugins(ScalaJSBundlerPlugin)
+enablePlugins(WorkbenchPlugin)
 
 name := "iamin"
 scalaVersion := "2.12.8"
@@ -16,6 +18,10 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %%% "autowire" % "0.2.6",
   "com.lihaoyi" %%% "scalatags" % "0.7.0"
 )
+
+Compile / npmDependencies ++= Seq(
+  "react" -> "16.7.0",
+  "react-dom" -> "16.7.0")
 
 scalaJSUseMainModuleInitializer := true
 
@@ -50,3 +56,4 @@ jsDependencies ++= Seq(
     commonJSName "ReactDOMServer")
 
 dependencyOverrides += "org.webjars.npm" % "js-tokens" % Versions.jsTokens
+workbenchDefaultRootObject := Some(("target/scala-2.12/classes/index.html", "target/scala-2.12/"))

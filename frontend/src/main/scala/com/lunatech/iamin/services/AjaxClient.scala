@@ -5,8 +5,8 @@ import java.nio.ByteBuffer
 import boopickle.Default._
 import org.scalajs.dom
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.scalajs.js.typedarray._
 
 object AjaxClient extends autowire.Client[ByteBuffer, Pickler, Pickler] {
@@ -20,5 +20,6 @@ object AjaxClient extends autowire.Client[ByteBuffer, Pickler, Pickler] {
   }
 
   override def read[Result: Pickler](p: ByteBuffer) = Unpickle[Result].fromBytes(p)
+
   override def write[Result: Pickler](r: Result) = Pickle.intoBytes(r)
 }

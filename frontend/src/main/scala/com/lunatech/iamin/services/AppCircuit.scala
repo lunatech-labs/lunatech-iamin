@@ -1,26 +1,53 @@
 package com.lunatech.iamin.services
 
+import autowire._
+import com.lunatech.iamin.Api
+import com.lunatech.iamin.modules.UserItem
 import diode._
-import diode.data.{Empty, Pot}
+import diode.data.{Empty, Pot, Ready}
 import diode.react.ReactConnector
+import boopickle.Default._
 
-case class AppModel(counter: Pot[Int])
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-case class Increase(amount: Int) extends Action
+case object RefreshUsers extends Action
 
-case class Decrease(amount: Int) extends Action
+case class UpdateAllUsers(users: Seq[UserItem]) extends Action
 
-case object Reset extends Action
+case class UpdateUser(item: UserItem) extends Action
+
+case class DeleteUser(item: UserItem) extends Action
+
+case class AppModel(users: Pot[Users])
+
+case class Users(items: Seq[UserItem]) {
+  def updated(newItem: UserItem): Users = {
+    items.indexWhere(_.id == newItem.id) match {
+      case -1 =>
+        Users(items :+ newItem)
+      case idx =>
+        Users(items.updated(idx, newItem))
+    }
+  }
+
+  def remove(item: UserItem) = Users(items.filterNot(_ == item))
+}
+
+class UserHandler[M](modelRW: ModelRW[M, Pot[Users]]) extends ActionHandler(modelRW) {
+  override def handle: PartialFunction[Any, ActionResult[M]] = {
+    case RefreshUsers =>
+      effectOnly(Effect(AjaxClient[Api].getAllUsers().call().map(UpdateAllUsers)))
+    case UpdateAllUsers(users) =>
+      updated(Ready(Users(users)))
+    case UpdateUser(item) =>
+      updated(value.map(_.updated(item)), Effect(AjaxClient[Api].updateUser(item).call().map(UpdateAllUsers)))
+    case DeleteUser(item) =>
+      updated(value.map(_.remove(item)), Effect(AjaxClient[Api].deleteUser(item.id).call().map(UpdateAllUsers)))
+  }
+}
 
 object AppCircuit extends Circuit[AppModel] with ReactConnector[AppModel] {
   def initialModel = AppModel(Empty)
-  override val actionHandler: HandlerFunction = new CounterActionHandler(zoomRW(_.counter)((m, v) => m.copy(counter = v)))
-}
 
-class CounterActionHandler[AppModel](modelRW: ModelRW[AppModel, Pot[Int]]) extends ActionHandler(modelRW) {
-  override protected def handle: PartialFunction[Any, ActionResult[AppModel]] = {
-    case Increase(a) => updated(Pot.fromOption(Option(202)))
-    case Decrease(a) => updated(Pot.fromOption(Option(0)))
-    case Reset => updated(Pot.fromOption(Option(101)))
-  }
+  override val actionHandler: HandlerFunction = new UserHandler(zoomRW(_.users)((m, v) => m.copy(users = v)))
 }

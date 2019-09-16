@@ -17,11 +17,15 @@ object IaminAPI {
     }
   }
 
+//  def deleteUser(id: String): Future[Unit] = {
+//    Ajax.delete(s"http://localhost:8080/users/$id").map(_ => Unit)
+//  }
 }
 
 @js.native
 trait User extends js.Object {
   def id: String
+
   def name: String
 }
 

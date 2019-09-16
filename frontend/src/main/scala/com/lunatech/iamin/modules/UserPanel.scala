@@ -22,7 +22,6 @@ object UserPanel {
   class Backend($: BackendScope[Props, State]) {
     def mounted(props: Props): Callback =
       Callback.when(props.proxy().isEmpty)({
-        println("mounted user panel, dispatching a RefreshUsers action")
         props.proxy.dispatchCB(RefreshUsers)
       })
 
@@ -39,14 +38,12 @@ object UserPanel {
       cb >> $.modState(s => s.copy(showUserForm = false))
     }
 
-    def render(p: Props, s: State) = {
-      println("Rendering UserPanel")
+    def render(p: Props, s: State): Unmounted[Panel.Props, Unit, Unit] = {
       Panel(Panel.Props("A list of users"),
         <.div(
-        p.proxy().renderFailed(ex => "Error loading"),
+        p.proxy().renderFailed(_ => "Error loading"),
         p.proxy().renderPending(_ > 500, _ => "Loading..."),
         p.proxy().render(users => {
-          println("Rendering UserList")
           UserList(users.items, item => {
             p.proxy.dispatchCB(UpdateUser(item))
           }, item => {
@@ -58,10 +55,13 @@ object UserPanel {
         }
         ),
         Button(Button.Props(editUser(None)), " New")),
-        if (s.showUserForm)
+        if (s.showUserForm) {
+          println("showing form")
           UserForm(UserForm.Props(s.selectedItem, userEdited))
-        else
-          VdomArray.empty())
+        } else {
+          println("not showing form")
+          VdomArray.empty()
+        })
     }
   }
 

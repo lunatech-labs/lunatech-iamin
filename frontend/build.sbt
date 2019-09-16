@@ -16,8 +16,7 @@ libraryDependencies ++= Seq(
   "io.suzaku" %%% "boopickle" % "1.2.6",
   "com.github.japgolly.scalacss" %%% "ext-react" % "0.5.3",
   "com.lihaoyi" %%% "autowire" % "0.2.6",
-  "com.lihaoyi" %%% "scalatags" % "0.7.0",
-  "org.webjars" % "font-awesome" % "4.3.0-1" % Provided
+  "com.lihaoyi" %%% "scalatags" % "0.7.0"
 )
 
 Compile / npmDependencies ++= Seq(
@@ -30,8 +29,7 @@ skip in packageJSDependencies := false
 
 jsDependencies ++= Seq(
   "org.webjars" % "jquery" % Versions.jQuery / "jquery.js" minified "jquery.min.js",
-  "org.webjars" % "bootstrap" % Versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js",
-  "org.webjars" % "log4javascript" % Versions.log4js / "js/log4javascript_uncompressed.js" minified "js/log4javascript.js"
+  "org.webjars" % "bootstrap" % Versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js"
 )
 
 jsDependencies ++= Seq(

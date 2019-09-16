@@ -8,6 +8,7 @@ import diode.data.{Empty, Pot, Ready}
 import diode.react.ReactConnector
 import boopickle.Default._
 
+import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 case object RefreshUsers extends Action
@@ -34,15 +35,17 @@ case class Users(items: Seq[UserItem]) {
 }
 
 class UserHandler[M](modelRW: ModelRW[M, Pot[Users]]) extends ActionHandler(modelRW) {
+  val apiService = new ApiService()
+  val users = apiService.getAllUsers()
   override def handle: PartialFunction[Any, ActionResult[M]] = {
-    case RefreshUsers =>
-      effectOnly(Effect(AjaxClient[Api].getAllUsers().call().map(UpdateAllUsers)))
-    case UpdateAllUsers(users) =>
+    case RefreshUsers => updated(Ready(Users(users)))
+    case UpdateAllUsers(users) => {
       updated(Ready(Users(users)))
+    }
     case UpdateUser(item) =>
-      updated(value.map(_.updated(item)), Effect(AjaxClient[Api].updateUser(item).call().map(UpdateAllUsers)))
+      updated(value.map(_.updated(item)), Effect(AjaxPostClient[Api].updateUser(item).call().map(UpdateAllUsers)))
     case DeleteUser(item) =>
-      updated(value.map(_.remove(item)), Effect(AjaxClient[Api].deleteUser(item.id).call().map(UpdateAllUsers)))
+      updated(value.map(_.remove(item)), Effect(AjaxPostClient[Api].deleteUser(item.id).call().map(UpdateAllUsers)))
   }
 }
 

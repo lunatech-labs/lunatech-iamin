@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.scalajs.js.typedarray._
 
-object AjaxClient extends autowire.Client[ByteBuffer, Pickler, Pickler] {
+object AjaxPostClient extends autowire.Client[ByteBuffer, Pickler, Pickler] {
   override def doCall(req: Request): Future[ByteBuffer] = {
     dom.ext.Ajax.post(
       url = "/api/" + req.path.mkString("/"),

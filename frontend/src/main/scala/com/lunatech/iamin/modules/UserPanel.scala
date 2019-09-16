@@ -1,7 +1,7 @@
 package com.lunatech.iamin.modules
 
 import com.lunatech.iamin.components.Bootstrap.{Button, Modal, Panel}
-import com.lunatech.iamin.components.{GlobalStyles, Icon, UserList}
+import com.lunatech.iamin.components.{GlobalStyles, UserList}
 import com.lunatech.iamin.services.{DeleteUser, RefreshUsers, UpdateUser, Users}
 import diode.data.Pot
 import diode.react.ReactPot._
@@ -21,7 +21,10 @@ object UserPanel {
 
   class Backend($: BackendScope[Props, State]) {
     def mounted(props: Props): Callback =
-      Callback.when(props.proxy().isEmpty)(props.proxy.dispatchCB(RefreshUsers))
+      Callback.when(props.proxy().isEmpty)({
+        println("mounted user panel, dispatching a RefreshUsers action")
+        props.proxy.dispatchCB(RefreshUsers)
+      })
 
     def editUser(item: Option[UserItem]): CallbackTo[Unit] =
       $.modState(s => s.copy(selectedItem = item, showUserForm = true))
@@ -36,17 +39,30 @@ object UserPanel {
       cb >> $.modState(s => s.copy(showUserForm = false))
     }
 
-    def render(p: Props, s: State) =
-      Panel(Panel.Props("A list of users"), <.div(
-        //        p.proxy().renderFailed(ex => "Error loading"),
+    def render(p: Props, s: State) = {
+      println("Rendering UserPanel")
+      Panel(Panel.Props("A list of users"),
+        <.div(
+        p.proxy().renderFailed(ex => "Error loading"),
         p.proxy().renderPending(_ > 500, _ => "Loading..."),
-        p.proxy().render(users => UserList(users.items, item => p.proxy.dispatchCB(UpdateUser(item)),
-          item => editUser(Some(item)), item => p.proxy.dispatchCB(DeleteUser(item)))),
-        Button(Button.Props(editUser(None)), Icon.plusSquare, " New")),
+        p.proxy().render(users => {
+          println("Rendering UserList")
+          UserList(users.items, item => {
+            p.proxy.dispatchCB(UpdateUser(item))
+          }, item => {
+              editUser(Some(item))
+            }, item => {
+              p.proxy.dispatchCB(DeleteUser(item))
+            }
+          )
+        }
+        ),
+        Button(Button.Props(editUser(None)), " New")),
         if (s.showUserForm)
           UserForm(UserForm.Props(s.selectedItem, userEdited))
         else
           VdomArray.empty())
+    }
   }
 
   val component: Component[Props, State, Backend, CtorType.Props] = ScalaComponent.builder[Props]("USER")
@@ -81,7 +97,7 @@ object UserForm {
     def render(p: Props, s: State): Unmounted[Modal.Props, Unit, Modal.Backend] = {
       val headerText = if (s.item.id == "") "Add new user" else "Edit user"
       Modal(Modal.Props(
-        header = hide => <.span(<.button(^.tpe := "button", bss.close, ^.onClick --> hide, Icon.close), <.h4(headerText)),
+        header = hide => <.span(<.button(^.tpe := "button", bss.close, ^.onClick --> hide), <.h4(headerText)),
         footer = hide => <.span(Button(Button.Props(submitForm() >> hide), "OK")),
         closed = formClosed(s, p)),
         <.div(bss.formGroup,

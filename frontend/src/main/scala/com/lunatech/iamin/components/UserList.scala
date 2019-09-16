@@ -19,14 +19,14 @@ object UserList {
 
   private val UserList = ScalaComponent.builder[UserListProps]("UserList")
     .render_P(p => {
+      println("UserList.render_P")
       val style = bss.listGroup
 
       def renderItem(item: UserItem) = {
+        println("Rendering user list item")
         val itemStyle = style.item
         <.li(itemStyle,
-          //          <.input.checkbox(^.checked := item.completed, ^.onChange --> p.stateChange(item.copy(completed = !item.completed))),
-          <.span(" "),
-          //          if (item.completed) <.s(item.content) else <.span(item.content),
+          <.span(item.name),
           Button(Button.Props(p.editItem(item), addStyles = Seq(bss.pullRight, bss.buttonXS)), "Edit"),
           Button(Button.Props(p.deleteItem(item), addStyles = Seq(bss.pullRight, bss.buttonXS)), "Delete")
         )
@@ -36,6 +36,9 @@ object UserList {
     })
     .build
 
-  def apply(items: Seq[UserItem], stateChange: UserItem => Callback, editItem: UserItem => Callback, deleteItem: UserItem => Callback): Unmounted[UserListProps, Unit, Unit] =
+  def apply(items: Seq[UserItem], stateChange: UserItem => Callback, editItem: UserItem => Callback, deleteItem: UserItem => Callback): Unmounted[UserListProps, Unit, Unit] = {
+    println("UserList.apply")
     UserList(UserListProps(items, stateChange, editItem, deleteItem))
+  }
+
 }

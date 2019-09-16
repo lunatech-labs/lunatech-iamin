@@ -26,10 +26,8 @@ object CounterDashboard {
     .initialStateFromProps(props => State(props.proxy.connect(m => m)))
     .renderPS { (_, props, state) =>
       <.div(
-        // header, MessageOfTheDay and chart components
         <.h2("CounterDashboard"),
         state.counterWrapper(CounterComponent(_))
-//        , <.div(props.router.link(TodoLoc)("Check your todos!"))
       )
     }
     .build
@@ -39,7 +37,6 @@ object CounterDashboard {
 
 object CounterComponent {
 
-  // create the React component for holding the Message of the Day
   val counterComponent = ScalaComponent.builder[ModelProxy[Pot[Int]]]("counter")
     .render_P { proxy =>
       Panel(Panel.Props("Message of the day"),
@@ -47,10 +44,6 @@ object CounterComponent {
         proxy().renderFailed(ex => <.p("Failed to load")),
         proxy().render(m => <.p(m)))
     }
-//    .componentDidMount(scope =>
-//      // update only if Motd is empty
-//      Callback.when(scope.props.value.isEmpty)(scope.props.dispatchCB(UpdateMotd()))
-//    )
     .build
 
   def apply(proxy: ModelProxy[Pot[Int]]) = counterComponent(proxy)

@@ -2,8 +2,6 @@ enablePlugins(ScalaJSPlugin)
 enablePlugins(JSDependenciesPlugin)
 enablePlugins(ScalaJSBundlerPlugin)
 enablePlugins(WorkbenchPlugin)
-enablePlugins(SbtWeb)
-enablePlugins(ScalaJSWeb)
 
 name := "iamin"
 scalaVersion := "2.12.8"
@@ -31,11 +29,8 @@ scalaJSUseMainModuleInitializer := true
 skip in packageJSDependencies := false
 
 jsDependencies ++= Seq(
-//  "org.webjars.bower" % "react" % Versions.react / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
-//  "org.webjars.bower" % "react" % Versions.react / "react-dom.js" minified "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM",
   "org.webjars" % "jquery" % Versions.jQuery / "jquery.js" minified "jquery.min.js",
   "org.webjars" % "bootstrap" % Versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js",
-  "org.webjars" % "chartjs" % Versions.chartjs / "Chart.js" minified "Chart.min.js",
   "org.webjars" % "log4javascript" % Versions.log4js / "js/log4javascript_uncompressed.js" minified "js/log4javascript.js"
 )
 
@@ -58,8 +53,3 @@ jsDependencies ++= Seq(
 dependencyOverrides += "org.webjars.npm" % "js-tokens" % Versions.jsTokens
 workbenchDefaultRootObject := Some(("target/scala-2.12/classes/index.html", "target/scala-2.12/"))
 
-compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value
-
-pipelineStages in Assets := Seq(scalaJSPipeline)
-pipelineStages := Seq(digest, gzip)
-LessKeys.compress in Assets := true

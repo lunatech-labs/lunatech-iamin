@@ -35,10 +35,9 @@ case class Users(items: Seq[UserItem]) {
 }
 
 class UserHandler[M](modelRW: ModelRW[M, Pot[Users]]) extends ActionHandler(modelRW) {
-  val apiService = new ApiService()
-  val users = apiService.getAllUsers()
   override def handle: PartialFunction[Any, ActionResult[M]] = {
-    case RefreshUsers => updated(Ready(Users(users)))
+    case RefreshUsers =>
+      effectOnly(Effect(IaminAPI.fetchUsers().map(UpdateAllUsers)))
     case UpdateAllUsers(users) => {
       updated(Ready(Users(users)))
     }

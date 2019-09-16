@@ -15,7 +15,7 @@ object App {
 
   sealed trait Loc
 
-  case object DashboardLocl extends Loc
+  case object DashboardLoc extends Loc
 
   case object UserLoc extends Loc
 
@@ -24,7 +24,7 @@ object App {
     val userPanelWrapper = AppCircuit.connect(_.users)
 
     (staticRoute(root, UserLoc) ~> renderR(ctl => userPanelWrapper(UserPanel(_)))
-      ).notFound(redirectToPage(DashboardLocl)(Redirect.Replace))
+      ).notFound(redirectToPage(DashboardLoc)(Redirect.Replace))
   }.renderWith(layout)
 
   def layout(c: RouterCtl[Loc], r: Resolution[Loc]): VdomTagOf[Div] = {

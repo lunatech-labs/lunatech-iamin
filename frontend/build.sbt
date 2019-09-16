@@ -2,6 +2,8 @@ enablePlugins(ScalaJSPlugin)
 enablePlugins(JSDependenciesPlugin)
 enablePlugins(ScalaJSBundlerPlugin)
 enablePlugins(WorkbenchPlugin)
+enablePlugins(SbtWeb)
+enablePlugins(ScalaJSWeb)
 
 name := "iamin"
 scalaVersion := "2.12.8"
@@ -16,7 +18,8 @@ libraryDependencies ++= Seq(
   "io.suzaku" %%% "boopickle" % "1.2.6",
   "com.github.japgolly.scalacss" %%% "ext-react" % "0.5.3",
   "com.lihaoyi" %%% "autowire" % "0.2.6",
-  "com.lihaoyi" %%% "scalatags" % "0.7.0"
+  "com.lihaoyi" %%% "scalatags" % "0.7.0",
+  "org.webjars" % "font-awesome" % "4.3.0-1" % Provided
 )
 
 Compile / npmDependencies ++= Seq(
@@ -27,9 +30,6 @@ scalaJSUseMainModuleInitializer := true
 
 skip in packageJSDependencies := false
 
-jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
-
-/** Dependencies for external JS libs that are bundled into a single .js file according to dependency order */
 jsDependencies ++= Seq(
 //  "org.webjars.bower" % "react" % Versions.react / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
 //  "org.webjars.bower" % "react" % Versions.react / "react-dom.js" minified "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM",
@@ -57,3 +57,9 @@ jsDependencies ++= Seq(
 
 dependencyOverrides += "org.webjars.npm" % "js-tokens" % Versions.jsTokens
 workbenchDefaultRootObject := Some(("target/scala-2.12/classes/index.html", "target/scala-2.12/"))
+
+compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value
+
+pipelineStages in Assets := Seq(scalaJSPipeline)
+pipelineStages := Seq(digest, gzip)
+LessKeys.compress in Assets := true

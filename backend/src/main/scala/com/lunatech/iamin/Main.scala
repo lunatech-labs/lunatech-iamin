@@ -30,7 +30,7 @@ object Main extends App with PrettyPrinter {
       anyOrigin = true,
       anyMethod = false,
       allowedOrigins = Set("localhost", "localhost:5000"),
-      allowedMethods = Some(Set("GET", "POST")),
+      allowedMethods = Some(Set("GET", "POST", "DELETE", "PUT", "PATCH")),
       allowCredentials = true,
       maxAge = 1.day.toSeconds)
 

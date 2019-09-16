@@ -38,14 +38,12 @@ class UserHandler[M](modelRW: ModelRW[M, Pot[Users]]) extends ActionHandler(mode
   override def handle: PartialFunction[Any, ActionResult[M]] = {
     case RefreshUsers =>
       effectOnly(Effect(IaminAPI.fetchUsers().map(UpdateAllUsers)))
-    case UpdateAllUsers(users) => {
+    case UpdateAllUsers(users) =>
       updated(Ready(Users(users)))
-    }
     case UpdateUser(item) =>
       updated(value.map(_.updated(item)), Effect(AjaxPostClient[Api].updateUser(item).call().map(UpdateAllUsers)))
-    case DeleteUser(item) => {
+    case DeleteUser(item) =>
       updated(value.map(_.remove(item)),Effect(IaminAPI.deleteUser(item.id).map(_ => RefreshUsers)))
-    }
   }
 }
 

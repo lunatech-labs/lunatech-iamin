@@ -1,6 +1,6 @@
 package com.lunatech.iamin.modules
 
-import com.lunatech.iamin.components.Bootstrap.{Button, Modal, Panel}
+import com.lunatech.iamin.components.Bootstrap.{Button, BootstrapModal, Panel}
 import com.lunatech.iamin.components.{GlobalStyles, UserList}
 import com.lunatech.iamin.services.{DeleteUser, RefreshUsers, UpdateUser, Users}
 import diode.data.Pot
@@ -56,10 +56,8 @@ object UserPanel {
         ),
         Button(Button.Props(editUser(None)), " New")),
         if (s.showUserForm) {
-          println("showing form")
           UserForm(UserForm.Props(s.selectedItem, userEdited))
         } else {
-          println("not showing form")
           VdomArray.empty()
         })
     }
@@ -94,10 +92,10 @@ object UserForm {
       t.modState(s => s.copy(item = s.item.copy(name = text)))
     }
 
-    def render(p: Props, s: State): Unmounted[Modal.Props, Unit, Modal.Backend] = {
+    def render(p: Props, s: State): Unmounted[BootstrapModal.Props, Unit, BootstrapModal.Backend] = {
       println("Rendering UserForm")
       val headerText = if (s.item.id == "") "Add new user" else "Edit user"
-      Modal(Modal.Props(
+      BootstrapModal(BootstrapModal.Props(
         header = hide => <.span(<.button(^.tpe := "button", bss.close, ^.onClick --> hide), <.h4(headerText)),
         footer = hide => <.span(Button(Button.Props(submitForm() >> hide), "OK")),
         closed = formClosed(s, p)),

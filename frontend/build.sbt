@@ -16,38 +16,30 @@ libraryDependencies ++= Seq(
   "io.suzaku" %%% "boopickle" % "1.2.6",
   "com.github.japgolly.scalacss" %%% "ext-react" % "0.5.3",
   "com.lihaoyi" %%% "autowire" % "0.2.6",
-  "com.lihaoyi" %%% "scalatags" % "0.7.0"
+  "com.lihaoyi" %%% "scalatags" % "0.7.0",
+  "be.doeraene" %%% "scalajs-jquery" % "0.9.5"
 )
 
 Compile / npmDependencies ++= Seq(
-  "react" -> "16.7.0",
-  "react-dom" -> "16.7.0")
+  "react" -> Versions.react,
+  "react-dom" -> Versions.react
+)
+
+npmDependencies in Compile ++= Seq(
+  "jquery" -> "2.1.3",
+  "bootstrap" -> "3.3.6"
+)
 
 scalaJSUseMainModuleInitializer := true
 
 skip in packageJSDependencies := false
 
 jsDependencies ++= Seq(
+  "org.webjars.bower" % "react" % Versions.react / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
+  "org.webjars.bower" % "react" % Versions.react / "react-dom.js" minified "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM",
   "org.webjars" % "jquery" % Versions.jQuery / "jquery.js" minified "jquery.min.js",
-  "org.webjars" % "bootstrap" % Versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js"
+  "org.webjars" % "bootstrap" % Versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js",
 )
-
-jsDependencies ++= Seq(
-  "org.webjars.npm" % "react" % Versions.react
-    /        "umd/react.development.js"
-    minified "umd/react.production.min.js"
-    commonJSName "React",
-  "org.webjars.npm" % "react-dom" % Versions.react
-    /         "umd/react-dom.development.js"
-    minified  "umd/react-dom.production.min.js"
-    dependsOn "umd/react.development.js"
-    commonJSName "ReactDOM",
-  "org.webjars.npm" % "react-dom" % Versions.react
-    /         "umd/react-dom-server.browser.development.js"
-    minified  "umd/react-dom-server.browser.production.min.js"
-    dependsOn "umd/react-dom.development.js"
-    commonJSName "ReactDOMServer")
-
 dependencyOverrides += "org.webjars.npm" % "js-tokens" % Versions.jsTokens
 workbenchDefaultRootObject := Some(("target/scala-2.12/classes/index.html", "target/scala-2.12/"))
 

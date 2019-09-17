@@ -48,4 +48,8 @@ class ApiService extends Api {
     todos = todos.filterNot(_.id == itemId)
     todos
   }
+
+  override def getAllUsers(): Seq[UserItem] = {
+    Seq(UserItem("gjfdklg8gd", "Dracula"), UserItem("fjsd822", "Pietje"))
+  }
 }

@@ -4,7 +4,7 @@ import diode.react.ModelProxy
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.router.RouterCtl
 import japgolly.scalajs.react.vdom.html_<^._
-import spatutorial.client.SPAMain.{DashboardLoc, Loc, MaintainUsersLoc, TodoLoc}
+import spatutorial.client.SPAMain.{DashboardLoc, Loc, MaintainUsersLoc }
 import spatutorial.client.components.Bootstrap.CommonStyle
 import spatutorial.client.components.Icon._
 import spatutorial.client.components._
@@ -19,37 +19,25 @@ object MainMenu {
 
   private case class MenuItem(idx: Int, label: (Props) => VdomNode, icon: Icon, location: Loc)
 
-  // build the Todo menu item, showing the number of open todos
-  private def buildTodoMenu(props: Props): VdomElement = {
-    val todoCount = props.proxy().getOrElse(0)
-    <.span(
-      <.span("Todo "),
-      <.span(bss.labelOpt(CommonStyle.danger), bss.labelAsBadge, todoCount).when(todoCount > 0)
-    )
-  }
-
   private def buildMaintainUsersMenu(props: Props): VdomElement = {
-    val todoCount = props.proxy().getOrElse(0)
+    val userCount = props.proxy().getOrElse(0)
     <.span(
       <.span("Users "),
-      <.span(bss.labelOpt(CommonStyle.danger), bss.labelAsBadge, todoCount).when(todoCount > 0)
+      <.span(bss.labelOpt(CommonStyle.danger), bss.labelAsBadge, userCount).when(userCount > 0)
     )
   }
 
   private val menuItems = Seq(
     MenuItem(1, _ => "Dashboard", Icon.dashboard, DashboardLoc),
-    MenuItem(2, buildTodoMenu, Icon.check, TodoLoc),
-    MenuItem(3, buildMaintainUsersMenu, Icon.check, MaintainUsersLoc)
+    MenuItem(2, buildMaintainUsersMenu, Icon.check, MaintainUsersLoc)
   )
 
   private class Backend($: BackendScope[Props, Unit]) {
     def mounted(props: Props) =
-      // dispatch a message to refresh the todos
-      Callback.when(props.proxy.value.isEmpty)(props.proxy.dispatchCB(RefreshTodos))
+      Callback.when(props.proxy.value.isEmpty)(props.proxy.dispatchCB(RefreshUsers))
 
     def render(props: Props) = {
       <.ul(bss.navbar)(
-        // build a list of menu items
         menuItems.toVdomArray(item =>
           <.li(^.key := item.idx, (^.className := "active").when(props.currentLoc == item.location),
           props.router.link(item.location)(item.icon, " ", item.label(props))

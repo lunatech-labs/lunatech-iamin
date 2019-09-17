@@ -1,9 +1,33 @@
 *.class
 *.log
-.idea
+node_modules
+
+# sbt specific
+.cache/
+.history/
+.lib/
+dist/*
 target/
-.cache
-dist/
-node_modules/
-.ensime
-.ensime_cache/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+.cache*
+.settings
+.project
+.classpath
+*/bin
+
+# IntelliJ IDEA
+.idea
+*.iml
+out
+*.sc
+
+# GitBook
+doc/_book
+/_book

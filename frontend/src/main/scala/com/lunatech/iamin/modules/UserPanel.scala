@@ -95,6 +95,7 @@ object UserForm {
     }
 
     def render(p: Props, s: State): Unmounted[Modal.Props, Unit, Modal.Backend] = {
+      println("Rendering UserForm")
       val headerText = if (s.item.id == "") "Add new user" else "Edit user"
       Modal(Modal.Props(
         header = hide => <.span(<.button(^.tpe := "button", bss.close, ^.onClick --> hide), <.h4(headerText)),

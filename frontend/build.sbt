@@ -40,6 +40,5 @@ jsDependencies ++= Seq(
   "org.webjars" % "jquery" % Versions.jQuery / "jquery.js" minified "jquery.min.js",
   "org.webjars" % "bootstrap" % Versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js",
 )
-dependencyOverrides += "org.webjars.npm" % "js-tokens" % Versions.jsTokens
 workbenchDefaultRootObject := Some(("target/scala-2.12/classes/index.html", "target/scala-2.12/"))
 

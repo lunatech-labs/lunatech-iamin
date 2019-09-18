@@ -2,33 +2,30 @@ package services
 
 import java.util.{Date, UUID}
 
+import repos.UserRepository
 import spatutorial.shared._
 
-class ApiService extends Api {
+import scala.concurrent.{Await, CanAwait}
+import scala.concurrent.duration.Duration
 
-  var users = Seq(User("gjfdklg8gd", "Dracula"), User("fjsd822", "Pietje"))
+class ApiService(repo: UserRepository) extends Api {
 
   override def welcomeMsg(name: String): String =
     s"Welcome to SPA, $name! Time is now ${new Date}"
 
   override def getAllUsers(): Seq[User] = {
-    users
+    Await.result(repo.getAllUsers(), Duration.Inf)
   }
 
   override def updateUser(item: User): Seq[User] = {
+    val users = Await.result(repo.getAllUsers(), Duration.Inf)
     if(users.exists(_.id == item.id)) {
-      users = users.collect {
-        case i if i.id == item.id => item
-        case i => i
-      }
+      Await.result(repo.update(item.id, item.name), Duration.Inf)
       println(s"User item was updated: $item")
     } else {
-      // add a new item
-      val newItem = item.copy(id = UUID.randomUUID().toString)
-      users :+= newItem
+      val newItem = Await.result(repo.create(item.name), Duration.Inf)
       println(s"User item was added: $newItem")
     }
-    Thread.sleep(300)
-    users
+    Await.result(repo.getAllUsers(), Duration.Inf)
   }
 }

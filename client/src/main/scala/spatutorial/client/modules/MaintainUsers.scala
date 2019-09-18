@@ -107,7 +107,7 @@ object UserForm {
   }
 
   val component = ScalaComponent.builder[Props]("UserForm")
-    .initialStateFromProps(p => State(p.item.getOrElse(User("foo", "bar"))))
+    .initialStateFromProps(p => State(p.item.getOrElse(User(9999, "bar"))))
     .renderBackend[Backend]
     .build
 

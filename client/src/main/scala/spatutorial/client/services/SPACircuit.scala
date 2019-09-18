@@ -53,7 +53,7 @@ case class Users(items: Seq[User]) {
 class UserHandler[M](modelRW: ModelRW[M, Pot[Users]]) extends ActionHandler(modelRW) {
   override def handle: PartialFunction[Any, ActionResult[M]] = {
     case RefreshUsers =>
-      effectOnly(Effect(AjaxGetClient[Api].getAllUsers().call().map(UpdateAllUsers)))
+      effectOnly(Effect(AjaxClient[Api].getAllUsers().call().map(UpdateAllUsers)))
     case UpdateAllUsers(users) =>
       updated(Ready(Users(users)))
     case UpdateUser(item) =>

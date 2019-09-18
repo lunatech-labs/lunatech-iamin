@@ -1,3 +1,3 @@
 package spatutorial.shared
 
-case class User(id: String, name: String)
+case class User(id: Int, name: String)

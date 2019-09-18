@@ -19,7 +19,8 @@ object Router extends autowire.Server[ByteBuffer, Pickler, Pickler] {
 }
 
 class Application @Inject()(implicit val config: Configuration, env: Environment, repo: UserRepository) extends Controller {
-    val apiService = new ApiService()
+
+    val apiService = new ApiService(repo)
 
     def index = Action {
         Ok(views.html.index("SPA tutorial"))
@@ -50,9 +51,4 @@ class Application @Inject()(implicit val config: Configuration, env: Environment
             Ok("")
     }
 
-    def getAllUsers = Action.async(parse.raw) { implicit request =>
-        repo.getAllUsers().map { users =>
-            Ok(Pickle.intoBytes(users).array())
-        }
-    }
 }

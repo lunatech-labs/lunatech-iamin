@@ -20,17 +20,20 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(
 
   private class UsersTable(tag: Tag) extends Table[User](tag, "users") {
 
-    def id = column[String]("id", O.PrimaryKey)
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def * = (id, name) <> ((User.apply _).tupled, User.unapply)
   }
 
   private val users = TableQuery[UsersTable]
 
-  def create(id: String, name: String): Future[User] = db.run {
-    (users.map(p => (p.id, p.name))
-      returning users.map(_.id)
-      into ((name, id) => User(id, name._1))) += (id, name)
+  def create(name: String): Future[Int] = db.run {
+    users.map(u => (u.name)) += (name)
+  }
+
+  def update(id: Int, name: String): Future[Int] = db.run {
+    val q = for { u <- users if u.id === id } yield u.name
+    q.update(name)
   }
 
   def getAllUsers(): Future[Seq[User]] = db.run {

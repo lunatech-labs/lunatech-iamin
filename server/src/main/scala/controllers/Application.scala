@@ -18,9 +18,7 @@ object Router extends autowire.Server[ByteBuffer, Pickler, Pickler] {
     override def write[R: Pickler](r: R) = Pickle.intoBytes(r)
 }
 
-class Application @Inject()(implicit val config: Configuration, env: Environment, repo: UserRepository) extends Controller {
-
-    val apiService = new ApiService(repo)
+class Application @Inject()(implicit val config: Configuration, env: Environment, apiService: ApiService) extends Controller {
 
     def index = Action {
         Ok(views.html.index("Lunatech Iamin"))

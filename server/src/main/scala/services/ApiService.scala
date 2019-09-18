@@ -1,14 +1,16 @@
 package services
 
-import java.util.{Date, UUID}
+import java.util.Date
 
+import javax.inject.{Inject, Singleton}
 import repos.UserRepository
 import spatutorial.shared._
 
-import scala.concurrent.{Await, CanAwait}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class ApiService(repo: UserRepository) extends Api {
+@Singleton
+class ApiService @Inject()(repo: UserRepository) extends Api {
 
   override def welcomeMsg(name: String): String =
     s"Welcome to SPA, $name! Time is now ${new Date}"

@@ -41,7 +41,7 @@ object MaintainUsers {
     }
 
     def render(p: Props, s: State) =
-      Panel(Panel.Props("What needs to be done"), <.div(
+      Panel(Panel.Props("Maintain users"), <.div(
         p.proxy().renderFailed(ex => "Error loading"),
         p.proxy().renderPending(_ > 500, _ => "Loading..."),
         p.proxy().render(users => UserList(users.items, item => p.proxy.dispatchCB(UpdateUser(item)),

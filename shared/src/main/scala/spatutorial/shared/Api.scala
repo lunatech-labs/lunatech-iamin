@@ -4,10 +4,10 @@ trait Api {
 
   def getAllUsers(): Seq[User]
 
-  def updateUser(item: User): Seq[User]
+  def updateUser(item: User): Unit
 
   // message of the day
   def welcomeMsg(name: String): String
 
-  def deleteUser(item: Int): Seq[User]
+  def deleteUser(item: Int): Unit
 }

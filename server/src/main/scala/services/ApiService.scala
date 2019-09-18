@@ -17,7 +17,7 @@ class ApiService(repo: UserRepository) extends Api {
     Await.result(repo.getAllUsers(), Duration.Inf)
   }
 
-  override def updateUser(item: User): Seq[User] = {
+  override def updateUser(item: User): Unit = {
     val users = Await.result(repo.getAllUsers(), Duration.Inf)
     if(users.exists(_.id == item.id)) {
       Await.result(repo.update(item.id, item.name), Duration.Inf)
@@ -26,11 +26,9 @@ class ApiService(repo: UserRepository) extends Api {
       val newItem = Await.result(repo.create(item.name), Duration.Inf)
       println(s"User item was added: $newItem")
     }
-    Await.result(repo.getAllUsers(), Duration.Inf)
   }
 
-  override def deleteUser(id: Int): Seq[User] = {
+  override def deleteUser(id: Int): Unit = {
     Await.result(repo.delete(id), Duration.Inf)
-    Await.result(repo.getAllUsers(), Duration.Inf)
   }
 }

@@ -57,9 +57,9 @@ class UserHandler[M](modelRW: ModelRW[M, Pot[Users]]) extends ActionHandler(mode
     case UpdateAllUsers(users) =>
       updated(Ready(Users(users)))
     case UpdateUser(item) =>
-      updated(value.map(_.updated(item)), Effect(AjaxClient[Api].updateUser(item).call().map(UpdateAllUsers)))
+      updated(value.map(_.updated(item)), Effect(AjaxClient[Api].updateUser(item).call().map(_ => RefreshUsers)))
     case DeleteUser(item) =>
-      updated(value.map(_.remove(item)), Effect(AjaxClient[Api].deleteUser(item.id).call().map(UpdateAllUsers)))
+      updated(value.map(_.remove(item)), Effect(AjaxClient[Api].deleteUser(item.id).call().map(_ => RefreshUsers)))
   }
 }
 

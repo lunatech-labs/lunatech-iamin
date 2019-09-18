@@ -36,6 +36,10 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(
     q.update(name)
   }
 
+  def delete(id: Int): Future[Int] = db.run {
+    users.filter(_.id === id).delete
+  }
+
   def getAllUsers(): Future[Seq[User]] = db.run {
     users.result
   }

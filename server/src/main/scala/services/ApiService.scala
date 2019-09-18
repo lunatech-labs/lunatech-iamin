@@ -28,4 +28,9 @@ class ApiService(repo: UserRepository) extends Api {
     }
     Await.result(repo.getAllUsers(), Duration.Inf)
   }
+
+  override def deleteUser(id: Int): Seq[User] = {
+    Await.result(repo.delete(id), Duration.Inf)
+    Await.result(repo.getAllUsers(), Duration.Inf)
+  }
 }

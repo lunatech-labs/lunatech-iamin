@@ -1,21 +1,21 @@
 package services
 
-import java.util.{UUID, Date}
+import java.util.{Date, UUID}
 
 import spatutorial.shared._
 
 class ApiService extends Api {
 
-  var users = Seq(UserItem("gjfdklg8gd", "Dracula"), UserItem("fjsd822", "Pietje"))
+  var users = Seq(User("gjfdklg8gd", "Dracula"), User("fjsd822", "Pietje"))
 
   override def welcomeMsg(name: String): String =
     s"Welcome to SPA, $name! Time is now ${new Date}"
 
-  override def getAllUsers(): Seq[UserItem] = {
+  override def getAllUsers(): Seq[User] = {
     users
   }
 
-  override def updateUser(item: UserItem): Seq[UserItem] = {
+  override def updateUser(item: User): Seq[User] = {
     if(users.exists(_.id == item.id)) {
       users = users.collect {
         case i if i.id == item.id => item

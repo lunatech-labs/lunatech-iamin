@@ -5,7 +5,7 @@ import diode._
 import diode.data._
 import diode.util._
 import diode.react.ReactConnector
-import spatutorial.shared.{Api, UserItem}
+import spatutorial.shared.{Api, User}
 import boopickle.Default._
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
@@ -29,16 +29,16 @@ class MotdHandler[M](modelRW: ModelRW[M, Pot[String]]) extends ActionHandler(mod
 
 case object RefreshUsers extends Action
 
-case class UpdateAllUsers(users: Seq[UserItem]) extends Action
+case class UpdateAllUsers(users: Seq[User]) extends Action
 
-case class UpdateUser(item: UserItem) extends Action
+case class UpdateUser(item: User) extends Action
 
-case class DeleteUser(item: UserItem) extends Action
+case class DeleteUser(item: User) extends Action
 
 case class AppModel(users: Pot[Users])
 
-case class Users(items: Seq[UserItem]) {
-  def updated(newItem: UserItem): Users = {
+case class Users(items: Seq[User]) {
+  def updated(newItem: User): Users = {
     items.indexWhere(_.id == newItem.id) match {
       case -1 =>
         Users(items :+ newItem)
@@ -47,13 +47,13 @@ case class Users(items: Seq[UserItem]) {
     }
   }
 
-  def remove(item: UserItem) = Users(items.filterNot(_ == item))
+  def remove(item: User) = Users(items.filterNot(_ == item))
 }
 
 class UserHandler[M](modelRW: ModelRW[M, Pot[Users]]) extends ActionHandler(modelRW) {
   override def handle: PartialFunction[Any, ActionResult[M]] = {
     case RefreshUsers =>
-      effectOnly(Effect(AjaxClient[Api].getAllUsers().call().map(UpdateAllUsers)))
+      effectOnly(Effect(AjaxGetClient[Api].getAllUsers().call().map(UpdateAllUsers)))
     case UpdateAllUsers(users) =>
       updated(Ready(Users(users)))
     case UpdateUser(item) =>

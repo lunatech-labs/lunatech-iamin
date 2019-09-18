@@ -17,18 +17,18 @@ object MaintainUsers {
 
   case class Props(proxy: ModelProxy[Pot[Users]])
 
-  case class State(selectedItem: Option[UserItem] = None, showUserForm: Boolean = false)
+  case class State(selectedItem: Option[User] = None, showUserForm: Boolean = false)
 
   class Backend($: BackendScope[Props, State]) {
     def mounted(props: Props) =
     // dispatch a message to refresh the users, which will cause UserStore to fetch users from the server
       Callback.when(props.proxy().isEmpty)(props.proxy.dispatchCB(RefreshUsers))
 
-    def editUser(item: Option[UserItem]) =
+    def editUser(item: Option[User]) =
     // activate the edit dialog
       $.modState(s => s.copy(selectedItem = item, showUserForm = true))
 
-    def userEdited(item: UserItem, cancelled: Boolean) = {
+    def userEdited(item: User, cancelled: Boolean) = {
       val cb = if (cancelled) {
         // nothing to do here
         Callback.log("User editing cancelled")
@@ -68,9 +68,9 @@ object UserForm {
   // shorthand for styles
   @inline private def bss = GlobalStyles.bootstrapStyles
 
-  case class Props(item: Option[UserItem], submitHandler: (UserItem, Boolean) => Callback)
+  case class Props(item: Option[User], submitHandler: (User, Boolean) => Callback)
 
-  case class State(item: UserItem, cancelled: Boolean = true)
+  case class State(item: User, cancelled: Boolean = true)
 
   class Backend(t: BackendScope[Props, State]) {
     def submitForm(): Callback = {
@@ -107,7 +107,7 @@ object UserForm {
   }
 
   val component = ScalaComponent.builder[Props]("UserForm")
-    .initialStateFromProps(p => State(p.item.getOrElse(UserItem("foo", "bar"))))
+    .initialStateFromProps(p => State(p.item.getOrElse(User("foo", "bar"))))
     .renderBackend[Backend]
     .build
 

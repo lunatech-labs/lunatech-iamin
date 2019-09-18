@@ -10,16 +10,16 @@ object UserList {
   @inline private def bss = GlobalStyles.bootstrapStyles
 
   case class UserListProps(
-                            items: Seq[UserItem],
-                            stateChange: UserItem => Callback,
-                            editItem: UserItem => Callback,
-                            deleteItem: UserItem => Callback
+                            items: Seq[User],
+                            stateChange: User => Callback,
+                            editItem: User => Callback,
+                            deleteItem: User => Callback
                           )
 
   private val UserList = ScalaComponent.builder[UserListProps]("UserList")
     .render_P(p => {
       val style = bss.listGroup
-      def renderItem(item: UserItem) = {
+      def renderItem(item: User) = {
         val itemStyle = style.item
         <.li(itemStyle,
           <.span(item.name),
@@ -31,7 +31,7 @@ object UserList {
     })
     .build
 
-  def apply(items: Seq[UserItem], stateChange: UserItem => Callback, editItem: UserItem => Callback, deleteItem: UserItem => Callback) = {
+  def apply(items: Seq[User], stateChange: User => Callback, editItem: User => Callback, deleteItem: User => Callback) = {
     UserList(UserListProps(items, stateChange, editItem, deleteItem))
   }
 

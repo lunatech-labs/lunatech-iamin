@@ -59,7 +59,6 @@ object Settings {
         "com.lihaoyi" %% "utest" % versions.uTest % Test,
         javaJdbc,
         "com.typesafe.play" %% "play-slick" % "2.1.1",
-//        "org.postgresql" % "postgresql" % "9.3-1100-jdbc4",
         "org.postgresql"      % "postgresql"            % "42.2.2"
     ))
 
